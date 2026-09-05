@@ -1,0 +1,294 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User cognitive fitness profile with stats, streak, and personal best scores.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique Firebase Authentication UID."
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address."
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name of the athlete."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar image URL."
+        },
+        "brainPowerScore": {
+          "type": "number",
+          "description": "Calculated cumulative brain power score."
+        },
+        "dailyStreak": {
+          "type": "number",
+          "description": "Current consecutive active days streak."
+        },
+        "lastActiveDateStr": {
+          "type": "string",
+          "description": "Date string format YYYY-MM-DD of last activity."
+        },
+        "totalGamesPlayed": {
+          "type": "number",
+          "description": "Total training sessions completed."
+        },
+        "totalScore": {
+          "type": "number",
+          "description": "Cumulative score across all games."
+        },
+        "favoriteGame": {
+          "type": "string",
+          "description": "Identifier of most frequently played game."
+        },
+        "peakMemoryAccuracy": {
+          "type": "number",
+          "description": "Peak accuracy percentage in memory games."
+        },
+        "peakFocusScore": {
+          "type": "number",
+          "description": "Peak score achieved in attention games."
+        },
+        "peakReactionTimeMs": {
+          "type": "number",
+          "description": "Fastest response time recorded in milliseconds."
+        },
+        "highScores": {
+          "type": "object",
+          "description": "Map of high scores per game type."
+        },
+        "gamesPlayedCount": {
+          "type": "object",
+          "description": "Map of play counts per game type."
+        },
+        "subscriptionStatus": {
+          "type": "string",
+          "description": "Status of subscription: trial, active, expired, canceled."
+        },
+        "isSubscribed": {
+          "type": "boolean",
+          "description": "True if user has an active paid membership."
+        },
+        "trialStartedAt": {
+          "type": "number",
+          "description": "Epoch timestamp of 1-week free trial start."
+        },
+        "trialExpiresAt": {
+          "type": "number",
+          "description": "Epoch timestamp of 1-week free trial expiry."
+        },
+        "subscriptionPlan": {
+          "type": "string",
+          "description": "Subscribed plan tier: monthly or annual."
+        },
+        "subscriptionExpiresAt": {
+          "type": "number",
+          "description": "Epoch timestamp of subscription expiration."
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Epoch timestamp of profile creation."
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Epoch timestamp of last profile update."
+        }
+      },
+      "required": ["uid", "displayName", "brainPowerScore"]
+    },
+    "GameHistoryEntry": {
+      "title": "GameHistoryEntry",
+      "description": "Record of an individual game session completed by the user.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique session identifier."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Auth UID of the player."
+        },
+        "gameType": {
+          "type": "string",
+          "description": "Game type identifier."
+        },
+        "gameTitle": {
+          "type": "string",
+          "description": "Human-readable game title."
+        },
+        "score": {
+          "type": "number",
+          "description": "Score achieved in the session."
+        },
+        "accuracy": {
+          "type": "number",
+          "description": "Accuracy percentage."
+        },
+        "level": {
+          "type": "number",
+          "description": "Level reached."
+        },
+        "responseTimeMs": {
+          "type": "number",
+          "description": "Average response time in milliseconds."
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Epoch timestamp of session completion."
+        },
+        "dateStr": {
+          "type": "string",
+          "description": "Date string YYYY-MM-DD."
+        }
+      },
+      "required": ["userId", "gameType", "score", "timestamp"]
+    },
+    "LeaderboardRecord": {
+      "title": "LeaderboardRecord",
+      "description": "Public leaderboard entry for game-specific and overall high scores.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Auth UID of the player."
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Display name of the athlete."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Optional avatar URL."
+        },
+        "gameType": {
+          "type": "string",
+          "description": "Game identifier or 'overall'."
+        },
+        "score": {
+          "type": "number",
+          "description": "Best score recorded."
+        },
+        "level": {
+          "type": "number",
+          "description": "Level reached."
+        },
+        "accuracy": {
+          "type": "number",
+          "description": "Accuracy percentage."
+        },
+        "responseTimeMs": {
+          "type": "number",
+          "description": "Response time in milliseconds."
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Timestamp of record update."
+        }
+      },
+      "required": ["userId", "displayName", "gameType", "score"]
+    },
+    "PvPRoom": {
+      "title": "PvPRoom",
+      "description": "Real-time PvP multiplayer match room for 1v1 to 5v5 team competitions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique room identifier."
+        },
+        "code": {
+          "type": "string",
+          "description": "Short 6-character room join code."
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["1v1", "2v2", "3v3", "4v4", "5v5"],
+          "description": "PvP match format mode."
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["queueing", "voting", "countdown", "in_progress", "completed", "abandoned"],
+          "description": "Current state of the match."
+        },
+        "players": {
+          "type": "array",
+          "description": "Array of participant player records."
+        },
+        "maxPlayers": {
+          "type": "number",
+          "description": "Maximum number of allowed players."
+        },
+        "votes": {
+          "type": "object",
+          "description": "Map of game ID to vote counts."
+        },
+        "selectedGame": {
+          "type": "string",
+          "description": "The chosen game from voting phase."
+        },
+        "matchDurationSeconds": {
+          "type": "number",
+          "description": "Match time in seconds (300 for 5 minutes)."
+        },
+        "timeRemaining": {
+          "type": "number",
+          "description": "Remaining match time."
+        },
+        "startedAt": {
+          "type": "number",
+          "description": "Epoch timestamp of match start."
+        },
+        "endsAt": {
+          "type": "number",
+          "description": "Epoch timestamp of match end."
+        },
+        "blueScore": {
+          "type": "number",
+          "description": "Cumulative score of Team Blue."
+        },
+        "redScore": {
+          "type": "number",
+          "description": "Cumulative score of Team Red."
+        },
+        "winner": {
+          "type": "string",
+          "description": "Winner team: blue, red, tie, or null."
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Epoch timestamp of room creation."
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Epoch timestamp of room update."
+        }
+      },
+      "required": ["id", "mode", "phase", "players", "blueScore", "redScore"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User private profile containing training statistics and settings."
+    },
+    "/users/{userId}/game_history/{historyId}": {
+      "schema": "GameHistoryEntry",
+      "description": "Historical log of user's individual game attempts."
+    },
+    "/leaderboard_records/{recordId}": {
+      "schema": "LeaderboardRecord",
+      "description": "Public leaderboard entries for high scores across cognitive drills."
+    },
+    "/pvp_rooms/{roomId}": {
+      "schema": "PvPRoom",
+      "description": "Real-time multiplayer PvP game room session."
+    }
+  }
+}

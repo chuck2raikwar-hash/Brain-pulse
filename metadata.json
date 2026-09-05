@@ -1,0 +1,6 @@
+{
+  "name": "Cognitive Brain Training",
+  "description": "Comprehensive cognitive training and mindfulness suite featuring 15 activities across logic puzzles, word games, pattern recognition, memory grids, Simon recall, visual distraction tasks, guided meditation, breathing pacers, journaling, and dual-task reaction drills.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

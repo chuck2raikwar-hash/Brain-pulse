@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unknown paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Health check / connection test doc
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User profiles: private to authenticated owner
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 100;
+      allow update: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 100;
+      allow delete: if isOwner(userId);
+
+      // User game history subcollection: private to owner
+      match /game_history/{historyId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId
+          && request.resource.data.score is number;
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Leaderboard records: public read for all visitors/athletes
+    // Writes restricted strictly to the authenticated record owner
+    match /leaderboard_records/{recordId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 100
+        && request.resource.data.score is number;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.score is number;
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // Alias game mode leaderboards entries if used
+    match /leaderboards/{gameMode}/entries/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    // Real-time PvP Match Rooms
+    // Public read for match participants/spectators
+    // Authorized write/update for players in match
+    match /pvp_rooms/{roomId} {
+      allow read: if true;
+      allow create: if request.resource.data.id is string
+        && request.resource.data.mode is string
+        && request.resource.data.phase is string;
+      allow update: if request.resource.data.id is string
+        && request.resource.data.mode is string
+        && request.resource.data.phase is string;
+      allow delete: if isSignedIn();
+    }
+  }
+}
+
