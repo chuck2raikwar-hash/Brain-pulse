@@ -6,6 +6,7 @@ import { getLocalPvPStats } from '../../lib/pvpService';
 interface PvPForfeitModalProps {
   isOpen: boolean;
   targetDestinationName?: string;
+  isPrivateRoom?: boolean;
   onStay: () => void;
   onConfirmForfeit: () => void;
 }
@@ -13,6 +14,7 @@ interface PvPForfeitModalProps {
 export const PvPForfeitModal: React.FC<PvPForfeitModalProps> = ({
   isOpen,
   targetDestinationName = 'Games',
+  isPrivateRoom = false,
   onStay,
   onConfirmForfeit
 }) => {
@@ -20,7 +22,7 @@ export const PvPForfeitModal: React.FC<PvPForfeitModalProps> = ({
 
   const currentStats = getLocalPvPStats();
   const currentRating = currentStats.rating;
-  const newRatingAfterPenalty = Math.max(0, currentRating - 20);
+  const newRatingAfterPenalty = isPrivateRoom ? currentRating : Math.max(0, currentRating - 20);
 
   return (
     <div
@@ -65,15 +67,30 @@ export const PvPForfeitModal: React.FC<PvPForfeitModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-6 sm:p-7 space-y-5">
-          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-950 space-y-2">
-            <div className="flex items-center gap-2 font-black text-sm text-rose-900">
-              <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>Are you sure you want to leave PvP?</span>
+          <div className={`border rounded-2xl p-4 space-y-2 ${
+            isPrivateRoom ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+          }`}>
+            <div className={`flex items-center gap-2 font-black text-sm ${
+              isPrivateRoom ? 'text-amber-900' : 'text-rose-900'
+            }`}>
+              <ShieldAlert className={`w-4 h-4 shrink-0 ${isPrivateRoom ? 'text-amber-600' : 'text-rose-600'}`} />
+              <span>{isPrivateRoom ? 'Leave Custom Match?' : 'Are you sure you want to leave PvP?'}</span>
             </div>
-            <p className="text-xs leading-relaxed text-rose-800">
-              You are currently queued or in an active battle. Navigating to{' '}
-              <strong className="font-extrabold underline decoration-rose-400">{targetDestinationName}</strong>{' '}
-              or leaving the page is considered a match abandonment and will cost you <strong>20 ELO rating points</strong>.
+            <p className={`text-xs leading-relaxed ${isPrivateRoom ? 'text-amber-800' : 'text-rose-800'}`}>
+              {isPrivateRoom ? (
+                <>
+                  This is a <strong>custom private lobby (Unranked Friendly)</strong>. Forfeiting or navigating to{' '}
+                  <strong className="font-extrabold underline decoration-amber-400">{targetDestinationName}</strong>{' '}
+                  will concede the friendly match to your opponent, with <strong>0 ELO deducted</strong> and no effect on your competitive win streak.
+                </>
+              ) : (
+                <>
+                  You are currently queued or in an active battle. Navigating to{' '}
+                  <strong className="font-extrabold underline decoration-rose-400">{targetDestinationName}</strong>{' '}
+                  or leaving the page is considered a match abandonment and will cost you <strong>20 ELO rating points</strong>.
+                  Your opponent will immediately win the match and receive an instant forfeit victory with <strong>+25 ELO</strong>.
+                </>
+              )}
             </p>
           </div>
 
@@ -84,16 +101,20 @@ export const PvPForfeitModal: React.FC<PvPForfeitModalProps> = ({
               <div className="font-display font-black text-lg text-slate-800">{currentRating}</div>
             </div>
 
-            <div className="flex flex-col items-center gap-0.5 text-rose-600">
-              <span className="text-xs font-black bg-rose-100 px-2 py-0.5 rounded-full border border-rose-200">
-                -20 ELO
+            <div className="flex flex-col items-center gap-0.5">
+              <span className={`text-xs font-black px-2 py-0.5 rounded-full border ${
+                isPrivateRoom ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-rose-100 text-rose-600 border-rose-200'
+              }`}>
+                {isPrivateRoom ? '±0 ELO (Unranked)' : '-20 ELO'}
               </span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className={`w-4 h-4 ${isPrivateRoom ? 'text-amber-600' : 'text-rose-600'}`} />
             </div>
 
             <div className="text-center">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">New Rating</div>
-              <div className="font-display font-black text-lg text-rose-600">{newRatingAfterPenalty}</div>
+              <div className={`font-display font-black text-lg ${isPrivateRoom ? 'text-slate-800' : 'text-rose-600'}`}>
+                {newRatingAfterPenalty}
+              </div>
             </div>
           </div>
 

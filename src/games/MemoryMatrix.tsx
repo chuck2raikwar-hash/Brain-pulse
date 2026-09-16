@@ -15,9 +15,10 @@ interface MemoryMatrixProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
-export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }) => {
+export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -25,10 +26,9 @@ export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }
   const [phase, setPhase] = useState<'ready' | 'memorize' | 'recall' | 'level-success' | 'game-over'>('ready');
   const [countdown, setCountdown] = useState(3);
 
-  // Grid configuration based on level
-  const gridSize = level <= 2 ? 4 : level <= 5 ? 5 : 6;
+  // Grid configuration based on level - gradual, smooth difficulty ramp
+  const gridSize = level <= 2 ? 3 : level <= 5 ? 4 : 5;
   const totalTiles = gridSize * gridSize;
-  const targetCount = Math.min(3 + level, Math.floor(totalTiles * 0.45));
 
   const [activePattern, setActivePattern] = useState<number[]>([]);
   const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
@@ -42,11 +42,20 @@ export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Start new round
+  // Start new round with gradual difficulty progression
   const startRound = (newLevel = level) => {
-    const currentGridSize = newLevel <= 2 ? 4 : newLevel <= 5 ? 5 : 6;
+    // 3x3 for levels 1-2, 4x4 for levels 3-5, 5x5 for levels 6+
+    const currentGridSize = newLevel <= 2 ? 3 : newLevel <= 5 ? 4 : 5;
     const currentTotal = currentGridSize * currentGridSize;
-    const currentTargets = Math.min(3 + newLevel, Math.floor(currentTotal * 0.45));
+
+    // Gradual targets: L1: 3, L2: 4, L3: 4, L4: 5, L5: 6, L6: 6, L7+: 7-8
+    const currentTargets = newLevel === 1 ? 3
+      : newLevel === 2 ? 4
+      : newLevel === 3 ? 4
+      : newLevel === 4 ? 5
+      : newLevel === 5 ? 6
+      : newLevel === 6 ? 6
+      : Math.min(8, 5 + Math.floor(newLevel / 3));
 
     // Generate random pattern of unique tile indices
     const indices: number[] = [];
@@ -63,8 +72,8 @@ export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }
     setPhase('memorize');
     sounds.playDigitFlash();
 
-    // Memorization flash duration
-    const displayDuration = Math.max(1200, 2200 - newLevel * 100);
+    // Memorization flash duration decreases slowly and comfortably
+    const displayDuration = Math.max(1400, 2500 - newLevel * 110);
     timerRef.current = setTimeout(() => {
       setPhase('recall');
       setRoundStartTime(Date.now());
@@ -110,11 +119,15 @@ export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }
       setStreak(newStreak);
       sounds.playCorrect(newStreak);
 
-      const points = 100 + newStreak * 25 + level * 30;
+      const isPatternComplete = newSelected.length === activePattern.length;
+      const baseTilePoints = Math.round(100 / activePattern.length);
+      const speedBonus = isPatternComplete && reactionTime < 1500 ? 15 : 0;
+      const points = baseTilePoints + speedBonus;
       setScore(s => s + points);
+      onScoreUpdate?.(points, true);
 
       // Check if all pattern tiles found
-      if (newSelected.length === activePattern.length) {
+      if (isPatternComplete) {
         setPhase('level-success');
         sounds.playLevelUp();
         confetti({
@@ -136,6 +149,7 @@ export const MemoryMatrix: React.FC<MemoryMatrixProps> = ({ onGameOver, onExit }
       setMistakenTiles(prev => [...prev, index]);
       setStreak(0);
       sounds.playMistake();
+      onScoreUpdate?.(0, false);
       
       const newLives = lives - 1;
       setLives(newLives);

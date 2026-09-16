@@ -15,13 +15,14 @@ interface NumberRecallProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
-export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }) => {
+export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [phase, setPhase] = useState<'ready' | 'flashing' | 'input' | 'round-result' | 'game-over'>('ready');
   const [countdown, setCountdown] = useState(3);
   const [level, setLevel] = useState(1);
-  const [digitLength, setDigitLength] = useState(4); // starts at 4 digits
+  const [digitLength, setDigitLength] = useState(3); // starts at 3 digits for gentle onboarding
   const [isReverseMode, setIsReverseMode] = useState(false); // Hard mode: recall backward
   const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
@@ -52,8 +53,9 @@ export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }
     setCurrentDisplayDigit(null);
     setPhase('flashing');
 
-    // Stream digits sequentially
+    // Stream digits sequentially with comfortable flash speed
     let idx = 0;
+    const flashInterval = Math.max(650, 850 - (len - 3) * 35);
     const streamInterval = setInterval(() => {
       if (idx < seq.length) {
         setCurrentDisplayDigit(seq[idx]);
@@ -67,7 +69,7 @@ export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }
         setPhase('input');
         setInputStartTime(Date.now());
       }
-    }, 750); // 750ms per digit flash
+    }, flashInterval);
   };
 
   // Ready countdown
@@ -78,7 +80,7 @@ export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }
         const t = setTimeout(() => setCountdown(c => c - 1), 700);
         return () => clearTimeout(t);
       } else {
-        startNewSequence(4);
+        startNewSequence(3);
       }
     }
   }, [phase, countdown]);
@@ -120,8 +122,11 @@ export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }
       sounds.playLevelUp();
       setRoundsWon(w => w + 1);
       
-      const roundScore = (digitLength * 150) + (isReverseMode ? 200 : 0) + Math.max(0, 3000 - reaction);
-      setScore(s => s + Math.max(100, Math.round(roundScore)));
+      const speedBonus = reaction < 2000 ? 15 : reaction < 3500 ? 10 : 0;
+      const lengthBonus = Math.min(15, (digitLength - 3) * 3);
+      const roundScore = 100 + lengthBonus + speedBonus;
+      setScore(s => s + roundScore);
+      onScoreUpdate?.(roundScore, true);
 
       confetti({
         particleCount: 25,
@@ -129,14 +134,17 @@ export const NumberRecall: React.FC<NumberRecallProps> = ({ onGameOver, onExit }
         origin: { y: 0.6 }
       });
 
-      // Increase level & length
+      // Slowly scale length: 3 digits for first 2 wins, 4 for next 2, 5 for next 2, etc.
+      const nextWon = roundsWon + 1;
+      const targetLength = Math.min(8, 3 + Math.floor(nextWon / 2));
+      const shouldBeReverse = nextWon >= 8 && Math.random() < 0.35;
+      setIsReverseMode(shouldBeReverse);
+
+      // Increase level & length gently
       setTimeout(() => {
         setLevel(l => l + 1);
-        setDigitLength(d => {
-          const next = d + 1;
-          startNewSequence(next);
-          return next;
-        });
+        setDigitLength(targetLength);
+        startNewSequence(targetLength);
       }, 1000);
     } else {
       sounds.playMistake();

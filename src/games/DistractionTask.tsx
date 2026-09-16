@@ -15,6 +15,7 @@ interface DistractionTaskProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 import { TargetChallenge, getRandomDistractionChallenges } from './data/distractionChallenges';
@@ -27,7 +28,7 @@ interface VisualItem {
   rotation?: number;
 }
 
-export const DistractionTask: React.FC<DistractionTaskProps> = ({ onGameOver, onExit }) => {
+export const DistractionTask: React.FC<DistractionTaskProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [challenges] = useState<TargetChallenge[]>(() => getRandomDistractionChallenges(10));
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -110,8 +111,10 @@ export const DistractionTask: React.FC<DistractionTaskProps> = ({ onGameOver, on
       setReactionTimes(prev => [...prev, latency]);
       sounds.playCorrect(3);
 
-      const timeBonus = roundTimeLeft * 25;
-      setScore(s => s + 200 + timeBonus);
+      const timeBonus = Math.min(25, roundTimeLeft * 2);
+      const points = 100 + timeBonus;
+      setScore(s => s + points);
+      onScoreUpdate?.(points, true);
 
       if (currentRound % 2 === 1) {
         confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
@@ -121,6 +124,7 @@ export const DistractionTask: React.FC<DistractionTaskProps> = ({ onGameOver, on
     } else {
       // Mistake click
       sounds.playMistake();
+      onScoreUpdate?.(0, false);
       setMistakes(m => m + 1);
       setRoundTimeLeft(t => Math.max(1, t - 3)); // 3-second penalty
     }

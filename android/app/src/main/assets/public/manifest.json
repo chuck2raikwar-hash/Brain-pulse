@@ -1,0 +1,18 @@
+{
+  "name": "Cortex Cognitive Athlete",
+  "short_name": "Cortex",
+  "description": "Comprehensive cognitive training and performance telemetry suite featuring 15 brain drills across memory, reaction speed, problem solving, and mindfulness.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#0284C7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

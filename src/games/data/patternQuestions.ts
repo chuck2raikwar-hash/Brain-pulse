@@ -1998,8 +1998,50 @@ export const PATTERN_QUESTIONS_POOL: PatternQuestion[] = [
   }
 ];
 
-// Helper to get random shuffled questions without repeats
+// Helper to get questions that slowly increase in difficulty question by question
 export function getRandomPatternQuestions(count = 10): PatternQuestion[] {
-  const shuffled = [...PATTERN_QUESTIONS_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  // Group questions into graduated difficulty brackets:
+  // Tier 1 (IDs 1-15): Basic single-step vertex counts, simple rotations, doubling
+  // Tier 2 (IDs 16-30): Square numbers, color spectra, alternating simple math
+  // Tier 3 (IDs 31-45): 2-step sequences, matrix quadrant shifts, prime gaps
+  // Tier 4 (IDs 46-60): Modular arithmetic, coordinate offsets, Roman numeral patterns
+  // Tier 5 (IDs 61-75): Fibonacci variations, dual-layer rotational logic
+  // Tier 6 (IDs 76-88): Multi-variable symbol matrices, bit-shift logic
+  // Tier 7 (IDs 89-100): Advanced logic, Collatz conjectures, complex spatial transforms
+  const tiers: PatternQuestion[][] = [
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 1 && q.id <= 15),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 16 && q.id <= 30),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 31 && q.id <= 45),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 46 && q.id <= 60),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 61 && q.id <= 75),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 76 && q.id <= 88),
+    PATTERN_QUESTIONS_POOL.filter(q => q.id >= 89 && q.id <= 100),
+  ];
+
+  const selected: PatternQuestion[] = [];
+  const usedIds = new Set<number>();
+
+  for (let i = 0; i < count; i++) {
+    // Map question index i smoothly to a tier index from 0 to tiers.length - 1
+    const tierProgress = Math.min(tiers.length - 1, Math.floor((i / Math.max(1, count - 1)) * (tiers.length - 1)));
+    const targetTier = tiers[tierProgress] || tiers[0];
+
+    // Pick an unused question from this tier
+    const available = targetTier.filter(q => !usedIds.has(q.id));
+    if (available.length > 0) {
+      const picked = available[Math.floor(Math.random() * available.length)];
+      selected.push(picked);
+      usedIds.add(picked.id);
+    } else {
+      // Fallback to any unused question from adjacent tiers
+      const anyUnused = PATTERN_QUESTIONS_POOL.filter(q => !usedIds.has(q.id));
+      if (anyUnused.length > 0) {
+        const picked = anyUnused[Math.floor(Math.random() * anyUnused.length)];
+        selected.push(picked);
+        usedIds.add(picked.id);
+      }
+    }
+  }
+
+  return selected;
 }

@@ -26,6 +26,7 @@ interface StretchingDualTaskProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 import { DualTaskItem, getRandomDualTaskQuestions } from './data/dualTaskQuestions';
@@ -79,7 +80,7 @@ const PHYSICAL_STRETCHES: StretchPose[] = [
   }
 ];
 
-export const StretchingDualTask: React.FC<StretchingDualTaskProps> = ({ onGameOver, onExit }) => {
+export const StretchingDualTask: React.FC<StretchingDualTaskProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [dualQuestions] = useState<DualTaskItem[]>(() => getRandomDualTaskQuestions(10));
   const [currentIdx, setCurrentIdx] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(30);
@@ -123,9 +124,11 @@ export const StretchingDualTask: React.FC<StretchingDualTaskProps> = ({ onGameOv
 
     if (idx === dualTask.correctIndex) {
       sounds.playCorrect(3);
-      setTaskScore(s => s + 150);
+      setTaskScore(s => s + 100);
+      onScoreUpdate?.(100, true);
     } else {
       sounds.playMistake();
+      onScoreUpdate?.(0, false);
     }
   };
 

@@ -471,12 +471,80 @@ export const VOCAB_QUESTIONS_POOL: VocabQuestion[] = [
   }
 ];
 
+// Helper to get anagrams that slowly increase in word length and difficulty question by question
 export function getRandomAnagrams(count = 10): AnagramPuzzle[] {
-  const shuffled = [...ANAGRAM_PUZZLES_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  // Sort pool by word length and complexity
+  const sortedByLength = [...ANAGRAM_PUZZLES_POOL].sort((a, b) => a.word.length - b.word.length);
+
+  // Group into progressive length tiers (4 letters -> 5 letters -> 6 letters -> 7 letters -> 8+ letters)
+  const tier4 = sortedByLength.filter(p => p.word.length <= 4);
+  const tier5 = sortedByLength.filter(p => p.word.length === 5);
+  const tier6 = sortedByLength.filter(p => p.word.length === 6);
+  const tier7 = sortedByLength.filter(p => p.word.length === 7);
+  const tier8Plus = sortedByLength.filter(p => p.word.length >= 8);
+
+  const tiers = [tier4, tier5, tier6, tier7, tier8Plus];
+  const selected: AnagramPuzzle[] = [];
+  const usedWords = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    // Map question index i smoothly across tiers
+    const tierIdx = Math.min(tiers.length - 1, Math.floor((i / Math.max(1, count - 1)) * (tiers.length - 1)));
+    const targetTier = tiers[tierIdx];
+
+    const available = targetTier.filter(p => !usedWords.has(p.word));
+    if (available.length > 0) {
+      const picked = available[Math.floor(Math.random() * available.length)];
+      selected.push(picked);
+      usedWords.add(picked.word);
+    } else {
+      const anyUnused = sortedByLength.filter(p => !usedWords.has(p.word));
+      if (anyUnused.length > 0) {
+        const picked = anyUnused[0];
+        selected.push(picked);
+        usedWords.add(picked.word);
+      }
+    }
+  }
+
+  return selected;
 }
 
+// Helper to get vocabulary questions that gradually ramp in cognitive difficulty question by question
 export function getRandomVocabQuestions(count = 10): VocabQuestion[] {
-  const shuffled = [...VOCAB_QUESTIONS_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  // Sort vocabulary questions by word length and conceptual complexity
+  const sorted = [...VOCAB_QUESTIONS_POOL].sort((a, b) => a.word.length - b.word.length);
+  const tierSize = Math.max(1, Math.floor(sorted.length / 5));
+
+  const tiers: VocabQuestion[][] = [
+    sorted.slice(0, tierSize),
+    sorted.slice(tierSize, tierSize * 2),
+    sorted.slice(tierSize * 2, tierSize * 3),
+    sorted.slice(tierSize * 3, tierSize * 4),
+    sorted.slice(tierSize * 4)
+  ];
+
+  const selected: VocabQuestion[] = [];
+  const usedWords = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    const tierIdx = Math.min(tiers.length - 1, Math.floor((i / Math.max(1, count - 1)) * (tiers.length - 1)));
+    const targetTier = tiers[tierIdx] || sorted;
+
+    const available = targetTier.filter(q => !usedWords.has(q.word));
+    if (available.length > 0) {
+      const picked = available[Math.floor(Math.random() * available.length)];
+      selected.push(picked);
+      usedWords.add(picked.word);
+    } else {
+      const anyUnused = sorted.filter(q => !usedWords.has(q.word));
+      if (anyUnused.length > 0) {
+        const picked = anyUnused[0];
+        selected.push(picked);
+        usedWords.add(picked.word);
+      }
+    }
+  }
+
+  return selected;
 }

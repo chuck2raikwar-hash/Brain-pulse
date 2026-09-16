@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Award,
   Zap,
-  Flame
+  Flame,
+  Gamepad2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
@@ -85,7 +86,18 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
         >
           <div className="relative z-10 space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-black uppercase tracking-wider text-white">
-              {config.title} &bull; 2-Minute Score Race Concluded
+              {room.isPrivateRoom ? (
+                <>
+                  <Gamepad2 className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{config.title} • Custom Match (Unranked Friendly)</span>
+                </>
+              ) : room.isForfeitWin ? (
+                isWin
+                  ? `${config.title} • Instant Forfeit Victory`
+                  : `${config.title} • Match Conceded`
+              ) : (
+                `${config.title} • 2-Minute Score Race Concluded`
+              )}
             </div>
 
             <div className="flex items-center justify-center gap-3">
@@ -98,12 +110,34 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
               )}
 
               <h2 className="font-display font-black text-3xl sm:text-4xl tracking-tight">
-                {isWin ? 'VICTORY!' : isTie ? 'STALEMATE! (TIE)' : 'DEFEAT'}
+                {room.isForfeitWin
+                  ? isWin
+                    ? 'VICTORY BY FORFEIT!'
+                    : 'MATCH FORFEITED'
+                  : isWin
+                  ? 'VICTORY!'
+                  : isTie
+                  ? 'STALEMATE! (TIE)'
+                  : 'DEFEAT'}
               </h2>
             </div>
 
             <p className="text-sm text-white/90 max-w-md mx-auto font-medium">
-              {isWin
+              {room.isPrivateRoom
+                ? room.isForfeitWin
+                  ? isWin
+                    ? `Opponent ${room.forfeitedBy?.displayName ? `(${room.forfeitedBy.displayName})` : ''} forfeited the friendly match! (Unranked - No ELO change)`
+                    : 'You forfeited this friendly match. (Unranked - No ELO lost)'
+                  : isWin
+                  ? 'Outstanding performance! Friendly match concluded with zero ELO at stake.'
+                  : isTie
+                  ? 'Scores were dead even at the buzzer! (Unranked Friendly Match)'
+                  : 'Great practice round! Custom matches let you test skills with friends without affecting your ranked ELO.'
+                : room.isForfeitWin
+                ? isWin
+                  ? `Opponent ${room.forfeitedBy?.displayName ? `(${room.forfeitedBy.displayName})` : ''} abandoned the match! You have been awarded an immediate win and +${outcome.ratingDelta} ELO!`
+                  : 'You forfeited this match. -20 ELO rating points have been deducted and win streak reset.'
+                : isWin
                 ? 'Outstanding performance! Your squad dominated the 2-minute cognitive sprint.'
                 : isTie
                 ? 'Scores were dead even at the buzzer. As per tournament rules, no one wins!'
@@ -113,6 +147,25 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
         </div>
 
         <div className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+          {/* Forfeit Notification Banner */}
+          {room.isForfeitWin && (
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center gap-3 text-amber-950">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                <Award className="w-5 h-5" />
+              </div>
+              <div className="text-xs space-y-0.5">
+                <div className="font-display font-black text-amber-900 text-sm">
+                  {isWin ? 'Instant Forfeit Victory Awarded' : 'Match Conceded'}
+                </div>
+                <p className="text-amber-800 leading-relaxed">
+                  {isWin
+                    ? `Opponent ${room.forfeitedBy?.displayName ? `"${room.forfeitedBy.displayName}"` : 'athlete'} left the arena. Under cognitive tournament regulations, you are awarded an immediate victory, +${outcome.ratingDelta} ELO rating, and your streak is preserved!`
+                    : 'You forfeited the battle early. 20 ELO rating points were deducted and your streak was reset.'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Final Score Comparison Bar */}
           <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
             {/* Team Blue */}
@@ -248,23 +301,37 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
           </div>
 
           {/* Rating Delta Banner */}
-          <div className="p-3.5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <TrendingUp className="w-4 h-4 text-cyan-400" />
-              <span className="text-xs font-bold text-slate-300">PvP Elo Rating:</span>
-              <span className="font-mono font-black text-cyan-300">{outcome.newStats.rating}</span>
-            </div>
+          {room.isPrivateRoom ? (
+            <div className="p-3.5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Gamepad2 className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-bold text-slate-300">Custom Match (Unranked):</span>
+                <span className="font-mono font-black text-slate-200">{outcome.newStats.rating} Elo</span>
+              </div>
 
-            <span
-              className={`font-mono font-black text-xs px-2.5 py-0.5 rounded-lg ${
-                outcome.ratingDelta > 0
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-              }`}
-            >
-              {outcome.ratingDelta > 0 ? `+${outcome.ratingDelta}` : outcome.ratingDelta} Elo
-            </span>
-          </div>
+              <span className="font-mono font-black text-xs px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                ±0 Elo (Friendly)
+              </span>
+            </div>
+          ) : (
+            <div className="p-3.5 bg-slate-900 text-white rounded-2xl flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <TrendingUp className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-bold text-slate-300">PvP Elo Rating:</span>
+                <span className="font-mono font-black text-cyan-300">{outcome.newStats.rating}</span>
+              </div>
+
+              <span
+                className={`font-mono font-black text-xs px-2.5 py-0.5 rounded-lg ${
+                  outcome.ratingDelta > 0
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                }`}
+              >
+                {outcome.ratingDelta > 0 ? `+${outcome.ratingDelta}` : outcome.ratingDelta} Elo
+              </span>
+            </div>
+          )}
 
           {/* Win Streak & Bot Toughness Status */}
           <div className="p-3.5 rounded-2xl border flex items-center justify-between transition-colors bg-slate-50 border-slate-200">
@@ -278,7 +345,9 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  {isWin
+                  {room.isPrivateRoom
+                    ? 'Friendly Custom Match: Ranked win streaks and bot difficulty scaling are preserved unaffected.'
+                    : isWin
                     ? `🔥 Streak increased! Opponent bots in your rank will now be tougher (+${Math.min(100, outcome.newStats.currentWinStreak * 10)}% reaction speed & accuracy).`
                     : isTie
                     ? `Stalemate. Win streak remains at ${outcome.newStats.currentWinStreak}.`
@@ -289,13 +358,15 @@ export const PvPGameOverModal: React.FC<PvPGameOverModalProps> = ({
 
             <div className="text-right shrink-0">
               <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${
-                isWin
+                room.isPrivateRoom
+                  ? 'bg-slate-200 text-slate-700 border-slate-300'
+                  : isWin
                   ? 'bg-amber-100 text-amber-900 border-amber-300'
                   : isTie
                   ? 'bg-slate-200 text-slate-700 border-slate-300'
                   : 'bg-rose-100 text-rose-800 border-rose-300'
               }`}>
-                {isWin ? '+1 STREAK' : isTie ? 'HELD' : 'STREAK RESET'}
+                {room.isPrivateRoom ? 'UNRANKED' : isWin ? '+1 STREAK' : isTie ? 'HELD' : 'STREAK RESET'}
               </span>
             </div>
           </div>

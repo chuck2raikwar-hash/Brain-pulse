@@ -721,7 +721,43 @@ export function getRandomDualTaskQuestion(): DualTaskItem {
   return DUAL_TASK_QUESTIONS_POOL[index];
 }
 
+// Helper to get dual-task questions that slowly increase in difficulty question by question
 export function getRandomDualTaskQuestions(count = 10): DualTaskItem[] {
-  const shuffled = [...DUAL_TASK_QUESTIONS_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  // Graduated difficulty tiers:
+  // Tier 1 (IDs 1-20): Straightforward serial operations and single-step arithmetic
+  // Tier 2 (IDs 21-40): Working memory conversions and basic percentages
+  // Tier 3 (IDs 41-60): Double operations and multi-step subtractions
+  // Tier 4 (IDs 61-80): Rapid associative logic and unit metrics
+  // Tier 5 (IDs 81-100): Multi-step chained calculations and advanced agility
+  const tiers: DualTaskItem[][] = [
+    DUAL_TASK_QUESTIONS_POOL.filter(q => q.id >= 1 && q.id <= 20),
+    DUAL_TASK_QUESTIONS_POOL.filter(q => q.id >= 21 && q.id <= 40),
+    DUAL_TASK_QUESTIONS_POOL.filter(q => q.id >= 41 && q.id <= 60),
+    DUAL_TASK_QUESTIONS_POOL.filter(q => q.id >= 61 && q.id <= 80),
+    DUAL_TASK_QUESTIONS_POOL.filter(q => q.id >= 81 && q.id <= 100),
+  ];
+
+  const selected: DualTaskItem[] = [];
+  const usedIds = new Set<number>();
+
+  for (let i = 0; i < count; i++) {
+    const tierIdx = Math.min(tiers.length - 1, Math.floor((i / Math.max(1, count - 1)) * (tiers.length - 1)));
+    const targetTier = tiers[tierIdx] || tiers[0];
+
+    const available = targetTier.filter(q => !usedIds.has(q.id));
+    if (available.length > 0) {
+      const picked = available[Math.floor(Math.random() * available.length)];
+      selected.push(picked);
+      usedIds.add(picked.id);
+    } else {
+      const anyUnused = DUAL_TASK_QUESTIONS_POOL.filter(q => !usedIds.has(q.id));
+      if (anyUnused.length > 0) {
+        const picked = anyUnused[Math.floor(Math.random() * anyUnused.length)];
+        selected.push(picked);
+        usedIds.add(picked.id);
+      }
+    }
+  }
+
+  return selected;
 }

@@ -1,423 +1,413 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { GAME_MODES } from '../data/games';
-import { GameType, ActivityCategory } from '../types';
+import { GameType } from '../types';
 import {
-  Brain,
   Grid3X3,
   Zap,
-  Binary,
+  Eye,
   Repeat,
+  Binary,
   Layers,
   Radio,
-  Eye,
   Puzzle,
   SpellCheck,
   Boxes,
   Headphones,
   Wind,
   BookOpen,
-  Gauge,
   Activity,
-  Play,
-  Clock,
-  CheckCircle2,
-  Lightbulb,
+  Search,
   Trophy,
-  Filter,
-  Sparkles,
-  ArrowRight,
+  Clock,
+  Flame,
   Lock,
-  Crown
+  X
 } from 'lucide-react';
-import { motion } from 'motion/react';
 
 interface GamesHubViewProps {
   onSelectGame: (gameId: GameType) => void;
 }
 
+interface GameCardItem {
+  id: GameType;
+  title: string;
+  categoryTag: string;
+  categoryTagColor: string;
+  iconBg: string;
+  icon: React.ElementType;
+  description: string;
+  defaultScore: number | string;
+  duration: string;
+  difficulty: string;
+  filterBucket: 'memory' | 'speed' | 'attention' | 'flexibility' | 'logic' | 'calm';
+}
+
+const GAMES_LIST: GameCardItem[] = [
+  {
+    id: 'memory-matrix',
+    title: 'Memory Matrix',
+    categoryTag: 'Memory',
+    categoryTagColor: 'text-blue-600',
+    iconBg: 'bg-blue-100 text-blue-600',
+    icon: Grid3X3,
+    description: 'Memorize flashing pattern grid positions',
+    defaultScore: 1250,
+    duration: '45s',
+    difficulty: 'Moderate',
+    filterBucket: 'memory'
+  },
+  {
+    id: 'reaction-drill',
+    title: 'Reaction Speed Drill',
+    categoryTag: 'Speed',
+    categoryTagColor: 'text-amber-600',
+    iconBg: 'bg-amber-100 text-amber-600',
+    icon: Zap,
+    description: 'React instantly when the light turns green',
+    defaultScore: 920,
+    duration: '30s',
+    difficulty: 'Moderate',
+    filterBucket: 'speed'
+  },
+  {
+    id: 'color-confusion',
+    title: 'Color Confusion (Stroop)',
+    categoryTag: 'Attention',
+    categoryTagColor: 'text-cyan-600',
+    iconBg: 'bg-cyan-100 text-cyan-600',
+    icon: Eye,
+    description: 'Overcome cognitive Stroop interference',
+    defaultScore: 1400,
+    duration: '45s',
+    difficulty: 'High',
+    filterBucket: 'attention'
+  },
+  {
+    id: 'n-back',
+    title: 'Pattern Match (2-Back)',
+    categoryTag: 'Flexibility',
+    categoryTagColor: 'text-purple-600',
+    iconBg: 'bg-purple-100 text-purple-600',
+    icon: Repeat,
+    description: 'Track and recall shapes from 2 steps prior',
+    defaultScore: 880,
+    duration: '45s',
+    difficulty: 'High',
+    filterBucket: 'flexibility'
+  },
+  {
+    id: 'number-recall',
+    title: 'Number Recall',
+    categoryTag: 'Memory',
+    categoryTagColor: 'text-blue-600',
+    iconBg: 'bg-blue-100 text-blue-600',
+    icon: Binary,
+    description: 'Hold expanding digit sequences in memory',
+    defaultScore: 1100,
+    duration: '45s',
+    difficulty: 'Progressive',
+    filterBucket: 'memory'
+  },
+  {
+    id: 'matching-cards',
+    title: 'Matching Cards',
+    categoryTag: 'Memory',
+    categoryTagColor: 'text-teal-600',
+    iconBg: 'bg-teal-100 text-teal-600',
+    icon: Layers,
+    description: 'Find matching icon pairs in minimum moves',
+    defaultScore: 1350,
+    duration: '60s',
+    difficulty: 'Moderate',
+    filterBucket: 'memory'
+  },
+  {
+    id: 'recall-sequence',
+    title: 'Recall Sequences (Simon)',
+    categoryTag: 'Memory',
+    categoryTagColor: 'text-violet-600',
+    iconBg: 'bg-violet-100 text-violet-600',
+    icon: Radio,
+    description: 'Audiovisual harmonic pattern replay',
+    defaultScore: 1050,
+    duration: '45s',
+    difficulty: 'Progressive',
+    filterBucket: 'memory'
+  },
+  {
+    id: 'distraction-task',
+    title: 'Distraction Search',
+    categoryTag: 'Attention',
+    categoryTagColor: 'text-rose-600',
+    iconBg: 'bg-rose-100 text-rose-600',
+    icon: Eye,
+    description: 'Spot targets under visual interference & noise',
+    defaultScore: 980,
+    duration: '45s',
+    difficulty: 'High',
+    filterBucket: 'attention'
+  },
+  {
+    id: 'logic-puzzles',
+    title: 'Logic Puzzles (Sudoku)',
+    categoryTag: 'Logic',
+    categoryTagColor: 'text-indigo-600',
+    iconBg: 'bg-indigo-100 text-indigo-600',
+    icon: Puzzle,
+    description: 'Mini-Sudoku sprints & deductive grid reasoning',
+    defaultScore: 1500,
+    duration: '3m',
+    difficulty: 'High',
+    filterBucket: 'logic'
+  },
+  {
+    id: 'word-games',
+    title: 'Word Games (Anagrams)',
+    categoryTag: 'Language',
+    categoryTagColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-100 text-emerald-600',
+    icon: SpellCheck,
+    description: 'Unscramble anagrams & test vocabulary precision',
+    defaultScore: 1200,
+    duration: '2m',
+    difficulty: 'Adaptive',
+    filterBucket: 'logic'
+  },
+  {
+    id: 'pattern-recognition',
+    title: 'Pattern Recognition',
+    categoryTag: 'Flexibility',
+    categoryTagColor: 'text-fuchsia-600',
+    iconBg: 'bg-fuchsia-100 text-fuchsia-600',
+    icon: Boxes,
+    description: 'Find the missing step in progressive sequences',
+    defaultScore: 1300,
+    duration: '2m',
+    difficulty: 'High',
+    filterBucket: 'flexibility'
+  },
+  {
+    id: 'guided-meditation',
+    title: 'Guided Meditation',
+    categoryTag: 'Calm',
+    categoryTagColor: 'text-sky-600',
+    iconBg: 'bg-sky-100 text-sky-600',
+    icon: Headphones,
+    description: 'Attentional reset & restorative ambient audio',
+    defaultScore: 'Zen',
+    duration: '3m',
+    difficulty: 'Mindful',
+    filterBucket: 'calm'
+  },
+  {
+    id: 'breathing-pacer',
+    title: 'Breathing Exercises (Pacer)',
+    categoryTag: 'Calm',
+    categoryTagColor: 'text-cyan-600',
+    iconBg: 'bg-cyan-100 text-cyan-600',
+    icon: Wind,
+    description: 'Box breathing & vagal resonance orb pacer',
+    defaultScore: 'Zen',
+    duration: '2m',
+    difficulty: 'Mindful',
+    filterBucket: 'calm'
+  },
+  {
+    id: 'journaling-prompts',
+    title: 'Journaling & Reflection',
+    categoryTag: 'Mindset',
+    categoryTagColor: 'text-amber-600',
+    iconBg: 'bg-amber-100 text-amber-600',
+    icon: BookOpen,
+    description: 'Metacognitive prompts for mental resilience',
+    defaultScore: 'Reflect',
+    duration: '3m',
+    difficulty: 'Mindful',
+    filterBucket: 'calm'
+  },
+  {
+    id: 'stretching-dual',
+    title: 'Stretching Dual-Task',
+    categoryTag: 'Mind-Body',
+    categoryTagColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-100 text-emerald-600',
+    icon: Activity,
+    description: 'Physical poses with simultaneous mental math',
+    defaultScore: 'Sync',
+    duration: '3m',
+    difficulty: 'Adaptive',
+    filterBucket: 'speed'
+  }
+];
+
 export const GamesHubView: React.FC<GamesHubViewProps> = ({ onSelectGame }) => {
-  const { profile, user, canUserPlay } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { profile, canUserPlay, openPaywall } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   const access = canUserPlay();
   const isLocked = !access.canPlay;
 
-  const gamesList = Object.values(GAME_MODES);
-
-  const filteredGames = selectedCategory === 'all'
-    ? gamesList
-    : gamesList.filter(g => g.activityCategory === selectedCategory);
-
-  const categories: { id: string; label: string; count: number }[] = [
-    { id: 'all', label: 'All Activities', count: gamesList.length },
-    {
-      id: 'Cognitive & Puzzles',
-      label: 'Cognitive & Puzzles',
-      count: gamesList.filter(g => g.activityCategory === 'Cognitive & Puzzles').length
-    },
-    {
-      id: 'Memory & Attention',
-      label: 'Memory & Attention',
-      count: gamesList.filter(g => g.activityCategory === 'Memory & Attention').length
-    },
-    {
-      id: 'Mindfulness & Relaxation',
-      label: 'Mindfulness & Relaxation',
-      count: gamesList.filter(g => g.activityCategory === 'Mindfulness & Relaxation').length
-    },
-    {
-      id: 'Physical & Dual-Task',
-      label: 'Physical & Dual-Task',
-      count: gamesList.filter(g => g.activityCategory === 'Physical & Dual-Task').length
-    }
+  const filterChips = [
+    { id: 'all', label: `All Games (${GAMES_LIST.length})` },
+    { id: 'memory', label: '🧠 Memory' },
+    { id: 'speed', label: '⚡ Speed' },
+    { id: 'attention', label: '🎯 Attention' },
+    { id: 'flexibility', label: '🔄 Flexibility' },
+    { id: 'logic', label: '🧩 Logic' },
+    { id: 'calm', label: '🧘 Calm' }
   ];
 
-  const getGameAccent = (gameId: GameType) => {
-    switch (gameId) {
-      case 'memory-matrix':
-        return {
-          border: 'border-emerald-200',
-          bgLight: 'bg-emerald-50/70',
-          badgeBg: 'bg-emerald-100 text-emerald-800',
-          btnBg: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25',
-          iconBg: 'bg-emerald-600 text-white',
-          accentText: 'text-emerald-600',
-          tipBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-          icon: Grid3X3
-        };
-      case 'color-confusion':
-        return {
-          border: 'border-amber-200',
-          bgLight: 'bg-amber-50/70',
-          badgeBg: 'bg-amber-100 text-amber-800',
-          btnBg: 'bg-amber-500 hover:bg-amber-400 text-white shadow-lg shadow-amber-500/25',
-          iconBg: 'bg-amber-500 text-white',
-          accentText: 'text-amber-600',
-          tipBg: 'bg-amber-50 border-amber-200 text-amber-900',
-          icon: Zap
-        };
-      case 'number-recall':
-        return {
-          border: 'border-indigo-200',
-          bgLight: 'bg-indigo-50/70',
-          badgeBg: 'bg-indigo-100 text-indigo-800',
-          btnBg: 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25',
-          iconBg: 'bg-indigo-600 text-white',
-          accentText: 'text-indigo-600',
-          tipBg: 'bg-indigo-50 border-indigo-200 text-indigo-900',
-          icon: Binary
-        };
-      case 'n-back':
-        return {
-          border: 'border-cyan-200',
-          bgLight: 'bg-cyan-50/70',
-          badgeBg: 'bg-cyan-100 text-cyan-900',
-          btnBg: 'bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold shadow-lg shadow-cyan-500/25',
-          iconBg: 'bg-cyan-600 text-white',
-          accentText: 'text-cyan-700',
-          tipBg: 'bg-cyan-50 border-cyan-200 text-cyan-950',
-          icon: Repeat
-        };
-      case 'matching-cards':
-        return {
-          border: 'border-teal-200',
-          bgLight: 'bg-teal-50/70',
-          badgeBg: 'bg-teal-100 text-teal-800',
-          btnBg: 'bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-600/25',
-          iconBg: 'bg-teal-600 text-white',
-          accentText: 'text-teal-600',
-          tipBg: 'bg-teal-50 border-teal-200 text-teal-900',
-          icon: Layers
-        };
-      case 'recall-sequence':
-        return {
-          border: 'border-violet-200',
-          bgLight: 'bg-violet-50/70',
-          badgeBg: 'bg-violet-100 text-violet-800',
-          btnBg: 'bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/25',
-          iconBg: 'bg-violet-600 text-white',
-          accentText: 'text-violet-600',
-          tipBg: 'bg-violet-50 border-violet-200 text-violet-900',
-          icon: Radio
-        };
-      case 'distraction-task':
-        return {
-          border: 'border-rose-200',
-          bgLight: 'bg-rose-50/70',
-          badgeBg: 'bg-rose-100 text-rose-800',
-          btnBg: 'bg-rose-500 hover:bg-rose-400 text-white shadow-lg shadow-rose-500/25',
-          iconBg: 'bg-rose-500 text-white',
-          accentText: 'text-rose-600',
-          tipBg: 'bg-rose-50 border-rose-200 text-rose-900',
-          icon: Eye
-        };
-      case 'logic-puzzles':
-        return {
-          border: 'border-blue-200',
-          bgLight: 'bg-blue-50/70',
-          badgeBg: 'bg-blue-100 text-blue-800',
-          btnBg: 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25',
-          iconBg: 'bg-blue-600 text-white',
-          accentText: 'text-blue-600',
-          tipBg: 'bg-blue-50 border-blue-200 text-blue-900',
-          icon: Puzzle
-        };
-      case 'word-games':
-        return {
-          border: 'border-emerald-200',
-          bgLight: 'bg-emerald-50/70',
-          badgeBg: 'bg-emerald-100 text-emerald-800',
-          btnBg: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25',
-          iconBg: 'bg-emerald-600 text-white',
-          accentText: 'text-emerald-600',
-          tipBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-          icon: SpellCheck
-        };
-      case 'pattern-recognition':
-        return {
-          border: 'border-fuchsia-200',
-          bgLight: 'bg-fuchsia-50/70',
-          badgeBg: 'bg-fuchsia-100 text-fuchsia-800',
-          btnBg: 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-600/25',
-          iconBg: 'bg-fuchsia-600 text-white',
-          accentText: 'text-fuchsia-600',
-          tipBg: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-900',
-          icon: Boxes
-        };
-      case 'guided-meditation':
-        return {
-          border: 'border-sky-200',
-          bgLight: 'bg-sky-50/70',
-          badgeBg: 'bg-sky-100 text-sky-800',
-          btnBg: 'bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/25',
-          iconBg: 'bg-sky-600 text-white',
-          accentText: 'text-sky-600',
-          tipBg: 'bg-sky-50 border-sky-200 text-sky-900',
-          icon: Headphones
-        };
-      case 'breathing-pacer':
-        return {
-          border: 'border-cyan-200',
-          bgLight: 'bg-cyan-50/70',
-          badgeBg: 'bg-cyan-100 text-cyan-800',
-          btnBg: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-600/25',
-          iconBg: 'bg-cyan-600 text-white',
-          accentText: 'text-cyan-600',
-          tipBg: 'bg-cyan-50 border-cyan-200 text-cyan-900',
-          icon: Wind
-        };
-      case 'journaling-prompts':
-        return {
-          border: 'border-amber-200',
-          bgLight: 'bg-amber-50/70',
-          badgeBg: 'bg-amber-100 text-amber-800',
-          btnBg: 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-600/25',
-          iconBg: 'bg-amber-600 text-white',
-          accentText: 'text-amber-600',
-          tipBg: 'bg-amber-50 border-amber-200 text-amber-900',
-          icon: BookOpen
-        };
-      case 'reaction-drill':
-        return {
-          border: 'border-red-200',
-          bgLight: 'bg-red-50/70',
-          badgeBg: 'bg-red-100 text-red-800',
-          btnBg: 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/25',
-          iconBg: 'bg-red-600 text-white',
-          accentText: 'text-red-600',
-          tipBg: 'bg-red-50 border-red-200 text-red-900',
-          icon: Gauge
-        };
-      case 'stretching-dual':
-      default:
-        return {
-          border: 'border-emerald-200',
-          bgLight: 'bg-emerald-50/70',
-          badgeBg: 'bg-emerald-100 text-emerald-800',
-          btnBg: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25',
-          iconBg: 'bg-emerald-600 text-white',
-          accentText: 'text-emerald-600',
-          tipBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-          icon: Activity
-        };
-    }
-  };
+  const filteredGames = GAMES_LIST.filter(game => {
+    const matchesFilter = selectedFilter === 'all' || game.filterBucket === selectedFilter;
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = !query ||
+      game.title.toLowerCase().includes(query) ||
+      game.description.toLowerCase().includes(query) ||
+      game.categoryTag.toLowerCase().includes(query);
+    return matchesFilter && matchesSearch;
+  });
 
   return (
-    <div id="games-hub-view" className="space-y-8 animate-in fade-in duration-300 text-slate-800">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pb-6 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-extrabold tracking-wider uppercase text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200 flex items-center gap-1">
-              <Brain className="w-3.5 h-3.5" />
-              <span>BrainPulse Cognitive & Wellness Suite</span>
-            </span>
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-black text-slate-900">
-            Brain Activities & Drills
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            Choose from science-backed cognitive workouts, deductive puzzles, mindfulness audio resets, and dual-task neuromuscular drills.
-          </p>
-        </div>
-
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-          {categories.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCategory(c.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === c.id
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-              }`}
-            >
-              <span>{c.label}</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                selectedCategory === c.id ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-500'
-              }`}>
-                {c.count}
-              </span>
-            </button>
-          ))}
-        </div>
+    <div id="games-hub-view" className="space-y-4 text-slate-800 max-w-3xl mx-auto pb-6">
+      {/* 1. Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+        <input
+          id="games-search-input"
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search drills, games, exercises..."
+          className="w-full pl-11 pr-10 py-3 bg-slate-200/75 hover:bg-slate-200 focus:bg-white text-slate-900 placeholder:text-slate-500 rounded-full text-xs sm:text-sm font-medium border border-transparent focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition-all shadow-2xs"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-300 hover:bg-slate-400 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
-      {/* Games Cards Detailed Grid */}
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredGames.map((game) => {
-          const highScore = profile?.highScores?.[game.id] || 0;
-          const plays = profile?.gamesPlayedCount?.[game.id] || 0;
-          const accent = getGameAccent(game.id);
-          const IconComponent = accent.icon;
-
+      {/* 2. Horizontal Filter Chips */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5" style={{ scrollbarWidth: 'none' }}>
+        {filterChips.map(chip => {
+          const isActive = selectedFilter === chip.id;
           return (
-            <div
-              key={game.id}
-              className={`bg-white border ${accent.border} rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden`}
+            <button
+              key={chip.id}
+              id={`filter-chip-${chip.id}`}
+              onClick={() => setSelectedFilter(chip.id)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shrink-0 ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-slate-200/70 hover:bg-slate-200 text-slate-700 font-medium'
+              }`}
             >
-              <div>
-                {/* Title & Difficulty Header */}
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-2xl ${accent.iconBg} flex items-center justify-center shadow-md shrink-0`}>
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${accent.badgeBg}`}>
-                          {game.domain}
-                        </span>
-                        {isLocked && access.reason === 'trial_expired' && (
-                          <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1">
-                            <Lock className="w-2.5 h-2.5" />
-                            <span>Pro</span>
-                          </span>
-                        )}
-                        {!user && (
-                          <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                            7d Trial
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="font-display text-lg sm:text-xl font-black text-slate-900 mt-1 leading-tight">
-                        {game.name}
-                      </h2>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-extrabold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-                    {game.difficulty}
-                  </span>
-                  <span className="text-[10px] font-medium text-slate-400">
-                    &bull; {game.estimatedTime}
-                  </span>
-                  {game.activityCategory && (
-                    <span className="text-[10px] font-medium text-slate-400">
-                      &bull; {game.activityCategory}
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-xs text-slate-500 mb-4 leading-relaxed line-clamp-2">
-                  {game.description}
-                </p>
-
-                {/* Protocol Rules Checklist */}
-                <div className={`${accent.bgLight} rounded-2xl border ${accent.border} p-3.5 mb-3 space-y-1.5`}>
-                  <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">How It Works</div>
-                  {game.rules.slice(0, 2).map((rule, rIdx) => (
-                    <div key={rIdx} className="flex items-start gap-1.5 text-xs text-slate-700">
-                      <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${accent.accentText} mt-0.5`} />
-                      <span className="leading-snug text-[11px]">{rule}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Cognitive Strategy Tip */}
-                <div className={`p-2.5 rounded-xl border ${accent.tipBg} text-[11px] flex items-start gap-1.5 mb-4`}>
-                  <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                  <div className="line-clamp-2">
-                    <strong className="font-bold">Tip: </strong>
-                    <span>{game.tips}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Footer */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-4 text-xs">
-                  <div>
-                    <span className="text-[9px] font-bold uppercase text-slate-400 block">Best</span>
-                    <span className={`font-mono text-sm font-extrabold ${accent.accentText}`}>
-                      {highScore.toLocaleString()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] font-bold uppercase text-slate-400 block">Sessions</span>
-                    <span className="font-mono text-sm font-extrabold text-slate-700">{plays}</span>
-                  </div>
-                </div>
-
-                <button
-                  id={`hub-play-${game.id}`}
-                  onClick={() => onSelectGame(game.id)}
-                  className={`py-2.5 px-5 rounded-2xl ${
-                    isLocked && access.reason === 'trial_expired'
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20'
-                      : !user
-                      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:opacity-95 text-white shadow-md shadow-blue-500/20'
-                      : accent.btnBg
-                  } text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5 cursor-pointer transition-all active:scale-95`}
-                >
-                  {isLocked && access.reason === 'trial_expired' ? (
-                    <>
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Unlock</span>
-                    </>
-                  ) : !user ? (
-                    <>
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Play (Trial)</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Start</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+              <span>{chip.label}</span>
+            </button>
           );
         })}
+      </div>
+
+      {/* 3. Spacious Organized Games List */}
+      <div className="space-y-3 pt-1">
+        {filteredGames.length === 0 ? (
+          <div className="text-center py-12 px-4 bg-white rounded-2xl border border-slate-200/60 shadow-xs">
+            <p className="text-sm font-bold text-slate-700">No activities found</p>
+            <p className="text-xs text-slate-400 mt-1">Try adjusting your search or category filter.</p>
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedFilter('all');
+              }}
+              className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold cursor-pointer hover:bg-blue-700 transition-colors"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          filteredGames.map(game => {
+            const IconComponent = game.icon;
+            const userScore = profile?.highScores?.[game.id];
+
+            return (
+              <div
+                key={game.id}
+                id={`game-item-${game.id}`}
+                onClick={() => {
+                  if (isLocked && access.reason === 'trial_expired' && openPaywall) {
+                    openPaywall();
+                  } else {
+                    onSelectGame(game.id);
+                  }
+                }}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 border border-slate-200/70 shadow-2xs hover:shadow-md hover:border-slate-300 active:scale-[0.985] transition-all cursor-pointer flex items-center gap-3.5 sm:gap-4 select-none group"
+              >
+                {/* Left Icon Container */}
+                <div
+                  className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl ${game.iconBg} flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+                >
+                  <IconComponent className="w-6 h-6" />
+                </div>
+
+                {/* Center Content */}
+                <div className="flex-1 min-w-0">
+                  {/* Title & Category Badge Row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-extrabold text-slate-900 text-[15px] sm:text-base leading-tight truncate tracking-tight group-hover:text-blue-600 transition-colors">
+                      {game.title}
+                    </h3>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isLocked && access.reason === 'trial_expired' && (
+                        <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 flex items-center gap-0.5">
+                          <Lock className="w-2.5 h-2.5" />
+                          <span>Pro</span>
+                        </span>
+                      )}
+                      <span className={`text-xs font-bold ${game.categoryTagColor}`}>
+                        {game.categoryTag}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Subtitle / Description */}
+                  <p className="text-xs text-slate-500 font-normal mt-0.5 leading-snug line-clamp-1">
+                    {game.description}
+                  </p>
+
+                  {/* Metadata Row: Trophy + Score, Clock + Duration, Flame + Difficulty */}
+                  <div className="flex items-center gap-3 sm:gap-4 mt-2 text-[11px] text-slate-600 font-medium">
+                    <div className="flex items-center gap-1">
+                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                      <span className="font-semibold text-slate-800 font-mono">
+                        {userScore !== undefined
+                          ? userScore.toLocaleString()
+                          : typeof game.defaultScore === 'number'
+                          ? game.defaultScore.toLocaleString()
+                          : game.defaultScore}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-slate-500">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{game.duration}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Flame className="w-3.5 h-3.5 text-orange-500" />
+                      <span className="text-slate-600">{game.difficulty}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
 };
-

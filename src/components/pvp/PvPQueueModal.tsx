@@ -29,19 +29,28 @@ interface PvPQueueModalProps {
   room: PvPRoom;
   onCancel: () => void;
   onInstantMatchBots: () => void;
+  onExpire?: () => void;
   searchPhase?: 'searching_players' | 'player_found' | 'deploying_bots';
   searchCountdown?: number;
 }
+
+const LOBBY_EXPIRY_SECONDS = 300; // 5-minute lobby lifetime
 
 export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
   mode,
   room,
   onCancel,
   onInstantMatchBots,
+  onExpire,
   searchPhase = 'searching_players',
   searchCountdown = 6
 }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [secondsUntilExpiry, setSecondsUntilExpiry] = useState<number>(() => {
+    if (!room.isPrivateRoom) return LOBBY_EXPIRY_SECONDS;
+    const elapsed = Math.floor((Date.now() - (room.createdAt || Date.now())) / 1000);
+    return Math.max(0, LOBBY_EXPIRY_SECONDS - elapsed);
+  });
   const [copied, setCopied] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const config = PVP_MODES_CONFIG[mode];
@@ -61,12 +70,29 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setElapsedSeconds(prev => prev + 1);
+
+      if (room.isPrivateRoom) {
+        const elapsed = Math.floor((Date.now() - (room.createdAt || Date.now())) / 1000);
+        const remaining = Math.max(0, LOBBY_EXPIRY_SECONDS - elapsed);
+        setSecondsUntilExpiry(remaining);
+
+        if (remaining <= 0) {
+          clearInterval(interval);
+          if (onExpire) {
+            onExpire();
+          } else {
+            onCancel();
+          }
+          return;
+        }
+      }
+
       if (Math.random() > 0.6) {
         sounds.playTick();
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [room.isPrivateRoom, room.createdAt, onExpire, onCancel]);
 
   const formatElapsed = (sec: number) => {
     const mins = Math.floor(sec / 60);
@@ -116,23 +142,44 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
               </div>
             </div>
 
+            {/* Prominent Red X Close Button on Top Right */}
             <button
+              id="close-queue-modal-btn"
               onClick={() => setShowCancelConfirm(true)}
-              className="w-9 h-9 rounded-xl bg-black/20 hover:bg-black/40 text-white flex items-center justify-center transition-colors cursor-pointer"
-              title="Cancel Matchmaking"
+              className="w-10 h-10 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-rose-950/40 border-2 border-rose-300 hover:border-white shrink-0 group"
+              title={room.isPrivateRoom ? "Abandon & Close Custom Lobby" : "Cancel Matchmaking"}
+              aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 stroke-[2.5] group-hover:rotate-90 transition-transform duration-200" />
             </button>
           </div>
         </div>
 
-        {/* ELO Penalty Heads-Up Notice Strip */}
-        <div className="bg-amber-50 border-b border-amber-200 px-5 py-2.5 flex items-center gap-2.5 text-xs text-amber-900 font-medium">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-          <p className="leading-tight">
-            <strong>Ranked Queue Lock:</strong> Leaving this page or pressing Games/other tabs forfeits the match and deducts <strong>-20 ELO</strong>.
-          </p>
-        </div>
+        {/* Notice Strip: Custom Lobby (0 ELO & 5m timer) vs Ranked Queue Lock (-20 ELO) */}
+        {room.isPrivateRoom ? (
+          <div className="bg-amber-50 border-b border-amber-200 px-5 py-2.5 flex items-center justify-between gap-2.5 text-xs text-amber-900 font-medium">
+            <div className="flex items-center gap-2 min-w-0">
+              <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+              <p className="leading-tight truncate">
+                <strong>Custom Friendly:</strong> Share code with friend. <strong>0 ELO at stake</strong>.
+              </p>
+            </div>
+            <div className={`px-2.5 py-0.5 rounded-full font-mono font-black text-[11px] border shrink-0 flex items-center gap-1 ${
+              secondsUntilExpiry <= 60
+                ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse'
+                : 'bg-amber-100 text-amber-900 border-amber-300'
+            }`}>
+              <span>Expires: {formatElapsed(secondsUntilExpiry)}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border-b border-amber-200 px-5 py-2.5 flex items-center gap-2.5 text-xs text-amber-900 font-medium">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+            <p className="leading-tight">
+              <strong>Ranked Queue Lock:</strong> Leaving this page or pressing Games/other tabs forfeits the match and deducts <strong>-20 ELO</strong>.
+            </p>
+          </div>
+        )}
 
         {/* Searching Content */}
         <div className="p-6 sm:p-8 space-y-6">
@@ -160,7 +207,12 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
 
             <div className="text-center mt-4 space-y-2">
               <div className="font-display font-extrabold text-lg text-slate-900 flex items-center justify-center gap-2">
-                {searchPhase === 'deploying_bots' ? (
+                {room.isPrivateRoom ? (
+                  <>
+                    <span>Waiting for Friend to Join Custom Match...</span>
+                    <Loader2 className="w-4 h-4 text-cyan-600 animate-spin" />
+                  </>
+                ) : searchPhase === 'deploying_bots' ? (
                   <>
                     <Bot className="w-5 h-5 text-amber-600 animate-bounce" />
                     <span>No Players Found • Deploying {rankInfo.name} Bots</span>
@@ -175,32 +227,58 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
 
               {/* Skill-Based Matchmaking Range & Search Window Indicator */}
               <div className="flex flex-wrap items-center justify-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-[11px] font-bold text-cyan-800">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
-                  <span>Matchmaking Bracket:</span>
-                  <span className="font-mono font-black text-cyan-950">~{currentStats.rating} ELO (&plusmn;30)</span>
-                </div>
+                {room.isPrivateRoom ? (
+                  <>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-bold text-emerald-800">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Match Type:</span>
+                      <span className="font-black text-emerald-950">Unranked Friendly (0 ELO)</span>
+                    </div>
 
-                {currentStats.currentWinStreak > 0 && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-[11px] font-bold text-amber-900">
-                    <Flame className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                    <span>Win Streak:</span>
-                    <span className="font-mono font-black text-amber-950">{currentStats.currentWinStreak} (Bot Toughness +{Math.min(100, currentStats.currentWinStreak * 10)}%)</span>
-                  </div>
-                )}
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${
+                      secondsUntilExpiry <= 60
+                        ? 'bg-rose-50 text-rose-800 border-rose-300 animate-pulse'
+                        : 'bg-amber-50 text-amber-900 border-amber-300'
+                    }`}>
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Lobby Closes in:</span>
+                      <span className="font-mono font-black">{formatElapsed(secondsUntilExpiry)} (5m Limit)</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-[11px] font-bold text-cyan-800">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                      <span>Matchmaking Bracket:</span>
+                      <span className="font-mono font-black text-cyan-950">~{currentStats.rating} ELO (&plusmn;30)</span>
+                    </div>
 
-                {searchPhase === 'searching_players' && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-900">
-                    <Radar className="w-3 h-3 text-amber-600 animate-spin" />
-                    <span>Player Search:</span>
-                    <span className="font-mono font-black text-amber-950">{searchCountdown}s remaining</span>
-                  </div>
+                    {currentStats.currentWinStreak > 0 && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-300 text-[11px] font-bold text-amber-900">
+                        <Flame className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                        <span>Win Streak:</span>
+                        <span className="font-mono font-black text-amber-950">{currentStats.currentWinStreak} (Bot Toughness +{Math.min(100, currentStats.currentWinStreak * 10)}%)</span>
+                      </div>
+                    )}
+
+                    {searchPhase === 'searching_players' && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-900">
+                        <Radar className="w-3 h-3 text-amber-600 animate-spin" />
+                        <span>Player Search:</span>
+                        <span className="font-mono font-black text-amber-950">{searchCountdown}s remaining</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
-              {/* Toughness Fallback Notice */}
+              {/* Notice Banner */}
               <div className="max-w-md mx-auto px-4 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 font-medium leading-relaxed">
-                {searchPhase === 'deploying_bots' ? (
+                {room.isPrivateRoom ? (
+                  <p>
+                    Give your friend the 6-character room code below. They can join from the PvP Hub by clicking <strong>Join Match</strong>. If they do not join within 5 minutes, this lobby automatically closes.
+                  </p>
+                ) : searchPhase === 'deploying_bots' ? (
                   <p className="text-amber-900 font-semibold">
                     ⚡ No online opponents found in {rankInfo.name} bracket. Deployed <strong>{rankInfo.botTitle || `${rankInfo.name} AI`}</strong> ({rankInfo.toughnessLabel}) calibrated to your {currentStats.currentWinStreak > 0 ? `${currentStats.currentWinStreak}-win streak` : 'rank'}.
                   </p>
@@ -391,19 +469,29 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
               className="w-full sm:flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs rounded-xl shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
             >
               <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-              <span>Skip Search &amp; Match {rankInfo.name} Bots ({rankInfo.toughnessLabel})</span>
+              <span>
+                {room.isPrivateRoom
+                  ? `Play with ${rankInfo.name} Bots Instead`
+                  : `Skip Search & Match ${rankInfo.name} Bots (${rankInfo.toughnessLabel})`}
+              </span>
             </button>
 
             <button
+              id="cancel-queue-bottom-btn"
               onClick={() => setShowCancelConfirm(true)}
-              className="w-full sm:w-auto py-3 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors cursor-pointer"
+              className={`w-full sm:w-auto py-3 px-5 font-bold text-xs rounded-xl border transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
+                room.isPrivateRoom
+                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+              }`}
             >
-              Cancel Queue
+              {room.isPrivateRoom && <X className="w-4 h-4 text-rose-600 stroke-[2.5]" />}
+              <span>{room.isPrivateRoom ? 'Abandon Lobby' : 'Cancel Queue'}</span>
             </button>
           </div>
         </div>
 
-        {/* Confirmation Modal when trying to Cancel Queue */}
+        {/* Confirmation Modal when trying to Cancel Queue / Abandon Lobby */}
         {showCancelConfirm && (
           <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
             <motion.div
@@ -413,35 +501,59 @@ export const PvPQueueModal: React.FC<PvPQueueModalProps> = ({
             >
               <div className="flex items-center gap-3 text-rose-600">
                 <div className="w-10 h-10 rounded-2xl bg-rose-100 flex items-center justify-center shrink-0">
-                  <ShieldAlert className="w-5 h-5 text-rose-600" />
+                  {room.isPrivateRoom ? (
+                    <X className="w-5 h-5 text-rose-600 stroke-[2.5]" />
+                  ) : (
+                    <ShieldAlert className="w-5 h-5 text-rose-600" />
+                  )}
                 </div>
                 <div>
-                  <h4 className="font-display font-extrabold text-base text-slate-900">Leave Matchmaking?</h4>
-                  <p className="text-[11px] text-rose-600 font-bold">Queue Dodge / Forfeiture Warning</p>
+                  <h4 className="font-display font-extrabold text-base text-slate-900">
+                    {room.isPrivateRoom ? 'Abandon Custom Lobby?' : 'Leave Matchmaking?'}
+                  </h4>
+                  <p className={`text-[11px] font-bold ${room.isPrivateRoom ? 'text-amber-600' : 'text-rose-600'}`}>
+                    {room.isPrivateRoom ? 'Unranked Friendly • 0 ELO Penalty' : 'Queue Dodge / Forfeiture Warning'}
+                  </p>
                 </div>
               </div>
 
               <p className="text-xs text-slate-600 leading-relaxed">
-                Canceling matchmaking now counts as abandoning the ranked queue and will deduct{' '}
-                <strong className="text-rose-600 font-black">20 ELO rating points</strong> ({currentStats.rating} &rarr; {Math.max(0, currentStats.rating - 20)}).
+                {room.isPrivateRoom ? (
+                  <>
+                    Closing this queue will <strong>abandon and close the lobby</strong>. The room code{' '}
+                    <strong className="font-mono font-black text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                      {room.code}
+                    </strong>{' '}
+                    will be permanently deactivated so no one else can join. Because this is a custom friendly match,{' '}
+                    <strong className="text-emerald-600 font-black">0 ELO rating points</strong> will be deducted.
+                  </>
+                ) : (
+                  <>
+                    Canceling matchmaking now counts as abandoning the ranked queue and will deduct{' '}
+                    <strong className="text-rose-600 font-black">20 ELO rating points</strong> ({currentStats.rating} &rarr; {Math.max(0, currentStats.rating - 20)}).
+                  </>
+                )}
               </p>
 
               <div className="flex flex-col gap-2 pt-2">
                 <button
+                  id="stay-in-queue-btn"
                   onClick={() => setShowCancelConfirm(false)}
                   className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-xs rounded-xl shadow-xs cursor-pointer hover:opacity-95"
                 >
-                  Stay in Queue (Keep Rating)
+                  {room.isPrivateRoom ? 'Keep Waiting for Friend' : 'Stay in Queue (Keep Rating)'}
                 </button>
 
                 <button
+                  id="confirm-abandon-btn"
                   onClick={() => {
                     setShowCancelConfirm(false);
                     onCancel();
                   }}
-                  className="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  Leave & Forfeit (-20 ELO)
+                  <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>{room.isPrivateRoom ? 'Abandon & Close Lobby (0 ELO)' : 'Leave & Forfeit (-20 ELO)'}</span>
                 </button>
               </div>
             </motion.div>

@@ -212,11 +212,16 @@ export const PvPVotingPhase: React.FC<PvPVotingPhaseProps> = ({
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-display font-black text-xl text-slate-900">Vote for Match Game</h2>
               <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${config.badgeColor}`}>
-                {config.title} &bull; 5 Min Game
+                {config.title} &bull; 2 Min Race
               </span>
+              {room.isPrivateRoom && (
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  Unranked Friendly (0 Elo)
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Choose from all 12 competitive cognitive games. Most votes wins! Ties broken at random.
@@ -441,6 +446,7 @@ export const PvPVotingPhase: React.FC<PvPVotingPhaseProps> = ({
       <PvPForfeitModal
         isOpen={showForfeitConfirm}
         targetDestinationName="Lobby"
+        isPrivateRoom={room.isPrivateRoom}
         onStay={() => setShowForfeitConfirm(false)}
         onConfirmForfeit={() => {
           setShowForfeitConfirm(false);

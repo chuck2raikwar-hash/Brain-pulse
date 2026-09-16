@@ -1,0 +1,12 @@
+{
+	"appId": "com.brainpulse.pro",
+	"appName": "BrainPulse Pro",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	},
+	"ios": {
+		"contentInset": "always"
+	},
+	"packageClassList": []
+}

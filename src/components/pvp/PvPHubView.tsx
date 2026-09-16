@@ -21,11 +21,15 @@ import {
   getLocalPvPStats,
   getLocalPvPHistory,
   recordForfeitOutcome,
+  forfeitAndConcedeMatch,
   syncRoomToFirestore,
   findOpenMatchmakingRoom,
   createMatchmakingRoomInFirestore,
   generateBotPlayer,
   getRankTierInfo,
+  abandonCustomRoom,
+  expireCustomRoom,
+  setPlayerElo,
   PvPUserStats,
   BOT_PROFILES
 } from '../../lib/pvpService';
@@ -63,7 +67,8 @@ import {
   X,
   Loader2,
   AlertCircle,
-  UserCheck
+  UserCheck,
+  SlidersHorizontal
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -105,11 +110,25 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
   // Queue search & rank fallback state
   const [queueSearchPhase, setQueueSearchPhase] = useState<'searching_players' | 'player_found' | 'deploying_bots'>('searching_players');
   const [queueSearchCountdown, setQueueSearchCountdown] = useState<number>(6);
+  const [showRankSelector, setShowRankSelector] = useState(false);
   const queueIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const queueCountdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hubNotification, setHubNotification] = useState<{ type: 'info' | 'warning' | 'error'; message: string } | null>(null);
+
+  // Sync latest stats on mount
+  useEffect(() => {
+    const latest = getLocalPvPStats();
+    setUserStats(latest);
+  }, []);
+
+  // Refresh stats whenever returning to hub
+  const refreshStats = useCallback(() => {
+    setUserStats(getLocalPvPStats());
+    setHistory(getLocalPvPHistory());
+  }, []);
 
   // Forfeit and leave match/queue helper
-  const handleForfeitAndLeave = useCallback(() => {
+  const handleForfeitAndLeave = useCallback(async () => {
     if (queueIntervalRef.current) {
       clearInterval(queueIntervalRef.current);
       queueIntervalRef.current = null;
@@ -120,12 +139,44 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
     }
     const current = activeRoomRef.current;
     if (current) {
-      recordForfeitOutcome(current, effectivePlayerId);
-      sounds.playMistake();
+      if (current.isPrivateRoom && current.phase === 'queueing') {
+        sounds.playTick();
+        await abandonCustomRoom(current, effectivePlayerId, 'Host abandoned the queue');
+        setHubNotification({
+          type: 'info',
+          message: `Custom match lobby closed. Room code "${current.code}" has been permanently deactivated so no one else can join.`
+        });
+      } else {
+        sounds.playMistake();
+        await forfeitAndConcedeMatch(current, effectivePlayerId);
+      }
     }
     setActiveRoom(null);
     refreshStats();
-  }, [effectivePlayerId]);
+  }, [effectivePlayerId, refreshStats]);
+
+  // Handle automatic lobby expiration after 5 minutes
+  const handleLobbyExpire = useCallback(async () => {
+    if (queueIntervalRef.current) {
+      clearInterval(queueIntervalRef.current);
+      queueIntervalRef.current = null;
+    }
+    if (queueCountdownTimerRef.current) {
+      clearInterval(queueCountdownTimerRef.current);
+      queueCountdownTimerRef.current = null;
+    }
+    const current = activeRoomRef.current;
+    if (current) {
+      sounds.playMistake();
+      await expireCustomRoom(current);
+      setHubNotification({
+        type: 'warning',
+        message: `Custom lobby for code "${current.code}" expired after 5 minutes of waiting. The room code is now deactivated.`
+      });
+    }
+    setActiveRoom(null);
+    refreshStats();
+  }, [refreshStats]);
 
   const onActiveRoomChangeRef = useRef(onActiveRoomChange);
   onActiveRoomChangeRef.current = onActiveRoomChange;
@@ -184,12 +235,6 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
     });
     return () => unsub();
   }, [activeRoom?.id]);
-
-  // Refresh stats whenever returning to hub
-  const refreshStats = () => {
-    setUserStats(getLocalPvPStats());
-    setHistory(getLocalPvPHistory());
-  };
 
   const getRankTier = (rating: number) => {
     if (rating >= 1800) return { name: 'Grandmaster', color: 'text-amber-500 bg-amber-50 border-amber-300' };
@@ -373,6 +418,14 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
     } finally {
       setIsCreatingHost(false);
     }
+  };
+
+  const handleDismissHostModal = () => {
+    if (generatedHostRoom) {
+      abandonCustomRoom(generatedHostRoom, effectivePlayerId, 'Host closed modal without starting').catch(() => {});
+      setGeneratedHostRoom(null);
+    }
+    setShowHostModal(false);
   };
 
   const handleStartHostedMatch = () => {
@@ -632,9 +685,41 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
           room={activeRoom}
           onCancel={handleCancelQueue}
           onInstantMatchBots={handleInstantMatchBots}
+          onExpire={handleLobbyExpire}
           searchPhase={queueSearchPhase}
           searchCountdown={queueSearchCountdown}
         />
+      )}
+
+      {/* Lobby / Queue Notifications Banner */}
+      {hubNotification && (
+        <div
+          id="hub-notification-banner"
+          className={`p-4 rounded-2xl flex items-center justify-between gap-3 border shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
+            hubNotification.type === 'warning'
+              ? 'bg-amber-50 border-amber-300 text-amber-950'
+              : hubNotification.type === 'error'
+              ? 'bg-rose-50 border-rose-300 text-rose-950'
+              : 'bg-blue-50 border-blue-300 text-blue-950'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <Clock className={`w-5 h-5 shrink-0 ${
+              hubNotification.type === 'warning'
+                ? 'text-amber-600'
+                : hubNotification.type === 'error'
+                ? 'text-rose-600'
+                : 'text-blue-600'
+            }`} />
+            <p className="text-xs font-semibold leading-relaxed">{hubNotification.message}</p>
+          </div>
+          <button
+            onClick={() => setHubNotification(null)}
+            className="text-xs font-black px-2.5 py-1 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 transition-colors cursor-pointer shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
       )}
 
       {/* Hero PvP Header & Combat Record Card */}
@@ -657,36 +742,86 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
           </div>
 
           {/* User Combat Tier Badge */}
-          <div className="flex items-center gap-4 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shrink-0 shadow-lg">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md shadow-cyan-500/20">
-              <Crown className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-extrabold text-xl text-white">
-                  {userStats.rating}
-                </span>
-                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${rankTier.color}`}>
-                  {rankTier.name}
-                </span>
+          <div className="relative flex flex-col bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3 sm:p-4 w-full md:w-auto shrink-0 shadow-lg min-w-0 max-w-full">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md shadow-cyan-500/20 shrink-0">
+                <Crown className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
               </div>
-              <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                <span>{userStats.wins}W - {userStats.losses}L</span>
-                <span>•</span>
-                <span className="text-emerald-400 font-bold">
-                  {userStats.matchesPlayed > 0 ? Math.round((userStats.wins / userStats.matchesPlayed) * 100) : 0}% Win Rate
-                </span>
-                {userStats.currentWinStreak > 0 && (
-                  <>
-                    <span>•</span>
-                    <span className="text-amber-400 font-bold flex items-center gap-1">
-                      <Flame className="w-3 h-3 text-amber-400 animate-pulse shrink-0" />
-                      {userStats.currentWinStreak} Streak
-                    </span>
-                  </>
-                )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                  <span className="font-display font-extrabold text-lg sm:text-xl text-white tracking-tight shrink-0">
+                    {userStats.rating} Elo
+                  </span>
+                  <span className={`text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ${rankTier.color}`}>
+                    {rankTier.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowRankSelector(prev => !prev)}
+                    className="p-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 transition-colors shrink-0 cursor-pointer"
+                    title="Change or test rating tier"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-slate-400 mt-1">
+                  <span className="shrink-0">{userStats.wins}W - {userStats.losses}L</span>
+                  <span>•</span>
+                  <span className="text-emerald-400 font-bold shrink-0">
+                    {userStats.matchesPlayed > 0 ? Math.round((userStats.wins / userStats.matchesPlayed) * 100) : 0}% Win Rate
+                  </span>
+                  {userStats.currentWinStreak > 0 && (
+                    <>
+                      <span>•</span>
+                      <span className="text-amber-400 font-bold flex items-center gap-1 shrink-0">
+                        <Flame className="w-3 h-3 text-amber-400 animate-pulse shrink-0" />
+                        {userStats.currentWinStreak} Streak
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* Quick Testing Tier Dropdown */}
+            <AnimatePresence>
+              {showRankSelector && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="mt-3 pt-3 border-t border-slate-700/80 flex flex-wrap items-center gap-1.5"
+                >
+                  <span className="text-[11px] font-bold text-slate-400 mr-1 w-full sm:w-auto">Test Tier:</span>
+                  {[
+                    { label: '1800 (Grandmaster)', elo: 1800, badge: 'text-amber-400 bg-amber-950/60 border-amber-500/40' },
+                    { label: '1600 (Master)', elo: 1600, badge: 'text-purple-400 bg-purple-950/60 border-purple-500/40' },
+                    { label: '1400 (Diamond)', elo: 1400, badge: 'text-cyan-400 bg-cyan-950/60 border-cyan-500/40' },
+                    { label: '1000 (Platinum)', elo: 1000, badge: 'text-emerald-400 bg-emerald-950/60 border-emerald-500/40' },
+                    { label: '600 (Gold)', elo: 600, badge: 'text-yellow-400 bg-yellow-950/60 border-yellow-500/40' },
+                    { label: '0 (Bronze)', elo: 0, badge: 'text-slate-400 bg-slate-800 border-slate-600' }
+                  ].map(t => (
+                    <button
+                      key={t.elo}
+                      type="button"
+                      onClick={() => {
+                        const updated = setPlayerElo(t.elo);
+                        setUserStats(updated);
+                        sounds.playLevelUp();
+                        setShowRankSelector(false);
+                      }}
+                      className={`text-[10px] font-bold px-2 py-1 rounded-md border transition-all hover:scale-105 cursor-pointer ${
+                        userStats.rating === t.elo
+                          ? 'ring-2 ring-cyan-400 font-extrabold ' + t.badge
+                          : t.badge + ' opacity-75 hover:opacity-100'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -788,12 +923,17 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
                 <Hash className="w-5 h-5 text-blue-600" />
                 <h3 className="font-display font-black text-lg text-slate-900">Custom Match</h3>
               </div>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                Private Lobby
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                  Unranked (0 ELO)
+                </span>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  Private Lobby
+                </span>
+              </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Host a private room with a shareable code, or enter a friend's code to join their squad or battle against them.
+              Host a private room with a shareable code, or enter a friend's code. <strong>Zero ELO at stake</strong>—play with friends or test games with no ranking risk!
             </p>
           </div>
 
@@ -1119,9 +1259,12 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
                 <h3 className="font-display font-black text-xl text-slate-900">
                   Host Private Match
                 </h3>
+                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  Unranked Friendly (0 Elo)
+                </span>
               </div>
               <button
-                onClick={() => setShowHostModal(false)}
+                onClick={handleDismissHostModal}
                 className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -1194,7 +1337,7 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
               )}
 
               <p className="text-[11px] text-slate-600 font-medium leading-relaxed max-w-xs mx-auto">
-                Share this code with your friend. In multi-player matches (&gt;2 players), they will get to choose whether to team up with you or face off against you!
+                Share this code with your friend. Custom matches are <strong>unranked friendlies (0 ELO lost or gained)</strong>. Room codes expire after <strong>5 minutes</strong> of inactivity.
               </p>
             </div>
 
@@ -1210,7 +1353,7 @@ export const PvPHubView: React.FC<PvPHubViewProps> = ({
               </button>
 
               <button
-                onClick={() => setShowHostModal(false)}
+                onClick={handleDismissHostModal}
                 className="w-full sm:w-auto py-3.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors cursor-pointer"
               >
                 Close

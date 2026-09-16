@@ -41,6 +41,7 @@ interface MatchingCardsProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 interface CardItem {
@@ -74,7 +75,7 @@ const AVAILABLE_ICONS = [
   { name: 'Target', icon: Target, color: 'text-rose-600 bg-rose-50 border-rose-200' }
 ];
 
-export const MatchingCards: React.FC<MatchingCardsProps> = ({ onGameOver, onExit }) => {
+export const MatchingCards: React.FC<MatchingCardsProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [cards, setCards] = useState<CardItem[]>([]);
@@ -191,11 +192,14 @@ export const MatchingCards: React.FC<MatchingCardsProps> = ({ onGameOver, onExit
             }
             return nextP;
           });
-          setScore(s => s + 150 + Math.max(0, 50 - seconds));
+          const matchPoints = 100 + Math.max(0, Math.min(25, 25 - Math.floor(seconds / 2)));
+          setScore(s => s + matchPoints);
+          onScoreUpdate?.(matchPoints, true);
         }, 400);
       } else {
         // MISMATCH
         sounds.playMistake();
+        onScoreUpdate?.(0, false);
         setTimeout(() => {
           setCards(prev => {
             const updated = [...prev];

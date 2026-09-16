@@ -15,6 +15,7 @@ interface RecallSequenceProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 const PADS = [
@@ -56,7 +57,7 @@ const PADS = [
   }
 ];
 
-export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onExit }) => {
+export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [userStep, setUserStep] = useState(0);
   const [activePad, setActivePad] = useState<number | null>(null);
@@ -99,9 +100,9 @@ export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onEx
     // Initial pause
     await new Promise(r => setTimeout(r, 600));
 
-    // Playback speed increases with level
-    const displayDuration = Math.max(260, 500 - seq.length * 20);
-    const pauseDuration = Math.max(120, 200 - seq.length * 10);
+    // Playback speed increases gently with sequence length
+    const displayDuration = Math.max(300, 540 - seq.length * 15);
+    const pauseDuration = Math.max(140, 220 - seq.length * 8);
 
     for (let i = 0; i < seq.length; i++) {
       const padIdx = seq[i];
@@ -134,7 +135,6 @@ export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onEx
     if (padIndex === sequence[userStep]) {
       const nextStep = userStep + 1;
       setUserStep(nextStep);
-      setScore(s => s + 50 * level);
 
       // Completed full sequence
       if (nextStep === sequence.length) {
@@ -142,6 +142,9 @@ export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onEx
         sounds.playCorrect(3);
         const newLevel = level + 1;
         setLevel(newLevel);
+        const roundPoints = 100 + Math.min(25, newLevel * 5);
+        setScore(s => s + roundPoints);
+        onScoreUpdate?.(roundPoints, true);
 
         if (newLevel % 3 === 0) {
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
@@ -156,6 +159,7 @@ export const RecallSequence: React.FC<RecallSequenceProps> = ({ onGameOver, onEx
     } else {
       // Mistake!
       sounds.playMistake();
+      onScoreUpdate?.(0, false);
       const nextLives = lives - 1;
       setLives(nextLives);
 

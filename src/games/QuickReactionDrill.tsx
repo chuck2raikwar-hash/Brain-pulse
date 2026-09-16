@@ -15,19 +15,21 @@ interface QuickReactionDrillProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 type DrillState = 'idle' | 'waiting' | 'ready' | 'result' | 'early';
 
 const TOTAL_TRIALS = 5;
 
-export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOver, onExit }) => {
+export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [drillState, setDrillState] = useState<DrillState>('idle');
   const [trial, setTrial] = useState(1);
   const [trialTimes, setTrialTimes] = useState<number[]>([]);
   const [lastTime, setLastTime] = useState<number | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const gameOverTimerRef = useRef<NodeJS.Timeout | null>(null);
   const startPerfTime = useRef<number>(0);
 
   // Keyboard Spacebar trigger
@@ -39,8 +41,12 @@ export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOv
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (gameOverTimerRef.current) clearTimeout(gameOverTimerRef.current);
+    };
+  }, []);
 
   const startTrial = () => {
     setDrillState('waiting');
@@ -64,11 +70,16 @@ export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOv
       if (timerRef.current) clearTimeout(timerRef.current);
       sounds.playMistake();
       setDrillState('early');
+      onScoreUpdate?.(0, false);
     } else if (drillState === 'ready') {
       // Clicked in green zone!
       const elapsed = Math.round(performance.now() - startPerfTime.current);
       sounds.playCorrect(2);
       setLastTime(elapsed);
+
+      const speedBonus = elapsed < 250 ? 25 : elapsed < 350 ? 15 : elapsed < 500 ? 5 : 0;
+      const reflexPoints = 100 + speedBonus;
+      onScoreUpdate?.(reflexPoints, true);
 
       const nextTimes = [...trialTimes, elapsed];
       setTrialTimes(nextTimes);
@@ -81,7 +92,7 @@ export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOv
         sounds.playFanfare();
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
 
-        setTimeout(() => {
+        gameOverTimerRef.current = setTimeout(() => {
           onGameOver({
             gameType: 'reaction-drill',
             gameTitle: 'Quick-Reaction Drill',
@@ -92,7 +103,7 @@ export const QuickReactionDrill: React.FC<QuickReactionDrillProps> = ({ onGameOv
           });
         }, 1500);
       }
-    } else if (drillState === 'early' || drillState === 'result') {
+    } else if (drillState === 'early' || (drillState === 'result' && trial < TOTAL_TRIALS)) {
       if (drillState === 'result') {
         setTrial(t => t + 1);
       }

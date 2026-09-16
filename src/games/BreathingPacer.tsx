@@ -15,6 +15,7 @@ interface BreathingPacerProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 type TechniqueId = 'box' | '478' | 'coherent';

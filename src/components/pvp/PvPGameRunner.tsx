@@ -40,9 +40,8 @@ export const PvPGameRunner: React.FC<PvPGameRunnerProps> = ({
     level: number;
     responseTimeMs: number;
   }) => {
-    // Add round points to player's PvP score
-    const earnedPoints = Math.max(50, result.score || 100);
-    onScoreEarned(earnedPoints, result.accuracy);
+    // Completion bonus for clearing a full round / game during PvP
+    onScoreEarned(50, result.accuracy);
     setTotalRoundsCompleted(prev => prev + 1);
 
     // Auto-advance into next round seamlessly during the 2 minutes
@@ -51,10 +50,17 @@ export const PvPGameRunner: React.FC<PvPGameRunnerProps> = ({
     }, 400);
   };
 
+  const handleScoreUpdate = (pointsDelta: number) => {
+    if (pointsDelta > 0) {
+      onScoreEarned(pointsDelta);
+    }
+  };
+
   const renderGame = () => {
     const commonProps = {
       onGameOver: handleGameOver,
-      onExit: onExitMatch
+      onExit: onExitMatch,
+      onScoreUpdate: handleScoreUpdate
     };
     const key = `pvp-round-${roundKey}`;
 

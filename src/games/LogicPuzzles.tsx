@@ -27,6 +27,7 @@ interface LogicPuzzlesProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 import {
@@ -38,7 +39,7 @@ import {
 
 type PuzzleMode = 'sudoku' | 'nonogram';
 
-export const LogicPuzzles: React.FC<LogicPuzzlesProps> = ({ onGameOver, onExit }) => {
+export const LogicPuzzles: React.FC<LogicPuzzlesProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [activeMode, setActiveMode] = useState<PuzzleMode>('sudoku');
   const [boardIndex, setBoardIndex] = useState(() => Math.floor(Math.random() * SUDOKU_BOARDS.length));
   const [seconds, setSeconds] = useState(0);
@@ -126,8 +127,10 @@ export const LogicPuzzles: React.FC<LogicPuzzlesProps> = ({ onGameOver, onExit }
   const handleSudokuVictory = () => {
     sounds.playFanfare();
     confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-    const earned = Math.max(100, 500 - seconds * 3 - mistakes * 40 - hintsUsed * 50);
+    const speedBonus = Math.max(0, Math.min(25, 25 - Math.floor(seconds / 4)));
+    const earned = 100 + speedBonus;
     setScore(s => s + earned);
+    onScoreUpdate?.(earned, true);
 
     setTimeout(() => {
       onGameOver({
@@ -183,8 +186,10 @@ export const LogicPuzzles: React.FC<LogicPuzzlesProps> = ({ onGameOver, onExit }
     if (solved) {
       sounds.playFanfare();
       confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
-      const earned = Math.max(150, 450 - seconds * 2);
+      const speedBonus = Math.max(0, Math.min(25, 25 - Math.floor(seconds / 3)));
+      const earned = 100 + speedBonus;
       setScore(s => s + earned);
+      onScoreUpdate?.(earned, true);
 
       setTimeout(() => {
         onGameOver({

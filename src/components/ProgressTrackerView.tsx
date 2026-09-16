@@ -361,80 +361,80 @@ export const ProgressTrackerView: React.FC<ProgressTrackerViewProps> = ({ onSele
         </div>
       </div>
 
-      {/* Peak Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Peak Metrics Cards (Spacious 2x2 on mobile, 4-col on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Brain Power Score */}
-        <div className="bg-white border border-blue-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-extrabold uppercase text-blue-700 tracking-wider">Brain Power Score</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center shadow-xs">
-              <Zap className="w-5 h-5 fill-white" />
+        <div className="bg-white border border-blue-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase text-blue-700 tracking-wider truncate">Brain Power</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center shadow-xs shrink-0">
+              <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-white" />
             </div>
           </div>
           <div>
-            <div className="font-display text-4xl font-black text-slate-900">
+            <div className="font-display text-2xl sm:text-4xl font-black text-slate-900">
               {profile?.brainPowerScore ? profile.brainPowerScore.toLocaleString() : (chartData?.avgScore ? Math.round(chartData.avgScore / 10) : 120)}
             </div>
-            <div className="text-xs font-semibold text-blue-600 mt-1 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Composite Neural Index</span>
+            <div className="text-[10px] sm:text-xs font-semibold text-blue-600 mt-0.5 sm:mt-1 flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              <span>Neural Index</span>
             </div>
           </div>
         </div>
 
         {/* Average Accuracy */}
-        <div className="bg-white border border-cyan-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-extrabold uppercase text-cyan-700 tracking-wider">Working Memory</span>
-            <div className="w-9 h-9 rounded-xl bg-cyan-500 text-white flex items-center justify-center shadow-xs">
-              <Target className="w-5 h-5" />
+        <div className="bg-white border border-cyan-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase text-cyan-700 tracking-wider truncate">Memory</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-cyan-500 text-white flex items-center justify-center shadow-xs shrink-0">
+              <Target className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="font-display text-4xl font-black text-slate-900">
+            <div className="font-display text-2xl sm:text-4xl font-black text-slate-900">
               {avgAccuracy}%
             </div>
-            <div className="text-xs font-semibold text-cyan-600 mt-1 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Mean Precision Rate</span>
+            <div className="text-[10px] sm:text-xs font-semibold text-cyan-600 mt-0.5 sm:mt-1 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>Mean Precision</span>
             </div>
           </div>
         </div>
 
         {/* Reaction Speed */}
-        <div className="bg-white border border-orange-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-extrabold uppercase text-orange-700 tracking-wider">Mean Reaction</span>
-            <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-xs">
-              <Clock className="w-5 h-5" />
+        <div className="bg-white border border-orange-200/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase text-orange-700 tracking-wider truncate">Avg Reaction</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-xs shrink-0">
+              <Clock className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="font-display text-4xl font-black text-slate-900">
+            <div className="font-display text-2xl sm:text-4xl font-black text-slate-900">
               {avgSpeed}ms
             </div>
-            <div className="text-xs font-semibold text-orange-600 mt-1 flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5" />
-              <span>Response Latency</span>
+            <div className="text-[10px] sm:text-xs font-semibold text-orange-600 mt-0.5 sm:mt-1 flex items-center gap-1">
+              <Flame className="w-3 h-3" />
+              <span>Latency</span>
             </div>
           </div>
         </div>
 
         {/* Completed Workouts */}
-        <div className="bg-white border border-lime-300 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-extrabold uppercase text-lime-800 tracking-wider">Total Workouts</span>
-            <div className="w-9 h-9 rounded-xl bg-lime-500 text-slate-900 flex items-center justify-center shadow-xs">
-              <Activity className="w-5 h-5" />
+        <div className="bg-white border border-lime-300/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase text-lime-800 tracking-wider truncate">Workouts</span>
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-lime-500 text-slate-900 flex items-center justify-center shadow-xs shrink-0">
+              <Activity className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="font-display text-4xl font-black text-slate-900">
+            <div className="font-display text-2xl sm:text-4xl font-black text-slate-900">
               {totalSessions}
             </div>
-            <div className="text-xs font-semibold text-lime-700 mt-1 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Recorded Sessions</span>
+            <div className="text-[10px] sm:text-xs font-semibold text-lime-700 mt-0.5 sm:mt-1 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              <span>Sessions</span>
             </div>
           </div>
         </div>

@@ -26,6 +26,7 @@ interface WordGamesProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 import {
@@ -35,7 +36,7 @@ import {
   getRandomVocabQuestions
 } from './data/wordGameData';
 
-export const WordGames: React.FC<WordGamesProps> = ({ onGameOver, onExit }) => {
+export const WordGames: React.FC<WordGamesProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [mode, setMode] = useState<'anagram' | 'vocab'>('anagram');
   const [anagrams, setAnagrams] = useState<AnagramPuzzle[]>(() => getRandomAnagrams(10));
   const [vocabList, setVocabList] = useState<VocabQuestion[]>(() => getRandomVocabQuestions(10));
@@ -110,8 +111,10 @@ export const WordGames: React.FC<WordGamesProps> = ({ onGameOver, onExit }) => {
       if (constructedWord === currentAnagram.word) {
         sounds.playCorrect(3);
         confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
-        const roundScore = 250 + Math.max(0, 50 - seconds * 2);
+        const speedBonus = Math.max(0, Math.min(25, 25 - seconds * 2));
+        const roundScore = 100 + speedBonus;
         setScore(s => s + roundScore);
+        onScoreUpdate?.(roundScore, true);
 
         if (roundIdx + 1 < anagrams.length) {
           setTimeout(() => setRoundIdx(r => r + 1), 900);
@@ -130,6 +133,7 @@ export const WordGames: React.FC<WordGamesProps> = ({ onGameOver, onExit }) => {
         }
       } else {
         sounds.playMistake();
+        onScoreUpdate?.(0, false);
       }
     }
   };
@@ -153,9 +157,13 @@ export const WordGames: React.FC<WordGamesProps> = ({ onGameOver, onExit }) => {
 
     if (optIndex === currentVocab.correctIndex) {
       sounds.playCorrect(2);
-      setScore(s => s + 200);
+      const speedBonus = seconds < 5 ? 15 : 0;
+      const points = 100 + speedBonus;
+      setScore(s => s + points);
+      onScoreUpdate?.(points, true);
     } else {
       sounds.playMistake();
+      onScoreUpdate?.(0, false);
     }
 
     setTimeout(() => {

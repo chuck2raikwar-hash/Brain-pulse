@@ -97,6 +97,14 @@ class SoundManager {
     osc.stop(now + 0.06);
   }
 
+  public click() {
+    this.playTick();
+  }
+
+  public playClick() {
+    this.playTick();
+  }
+
   public playDigitFlash() {
     if (!this.enabled) return;
     this.initCtx();

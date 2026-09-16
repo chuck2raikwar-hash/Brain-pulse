@@ -1221,7 +1221,41 @@ export const DISTRACTION_CHALLENGES_POOL: TargetChallenge[] = [
   }
 ];
 
+// Helper to get challenges that slowly increase in density and difficulty question by question
 export function getRandomDistractionChallenges(count = 10): TargetChallenge[] {
-  const shuffled = [...DISTRACTION_CHALLENGES_POOL].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  // Graduated difficulty tiers from gentle density & obvious targets to high density & subtle distractors
+  const tiers: TargetChallenge[][] = [
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 1 && q.id <= 15),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 16 && q.id <= 30),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 31 && q.id <= 45),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 46 && q.id <= 60),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 61 && q.id <= 75),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 76 && q.id <= 88),
+    DISTRACTION_CHALLENGES_POOL.filter(q => q.id >= 89 && q.id <= 100),
+  ];
+
+  const selected: TargetChallenge[] = [];
+  const usedIds = new Set<number>();
+
+  for (let i = 0; i < count; i++) {
+    // Progress smoothly through the difficulty tiers
+    const tierProgress = Math.min(tiers.length - 1, Math.floor((i / Math.max(1, count - 1)) * (tiers.length - 1)));
+    const targetTier = tiers[tierProgress] || tiers[0];
+
+    const available = targetTier.filter(q => !usedIds.has(q.id));
+    if (available.length > 0) {
+      const picked = available[Math.floor(Math.random() * available.length)];
+      selected.push(picked);
+      usedIds.add(picked.id);
+    } else {
+      const anyUnused = DISTRACTION_CHALLENGES_POOL.filter(q => !usedIds.has(q.id));
+      if (anyUnused.length > 0) {
+        const picked = anyUnused[Math.floor(Math.random() * anyUnused.length)];
+        selected.push(picked);
+        usedIds.add(picked.id);
+      }
+    }
+  }
+
+  return selected;
 }

@@ -4,7 +4,12 @@ import { GameType } from '../../types';
 import { GAME_MODES } from '../../data/games';
 import { PvPGameRunner } from './PvPGameRunner';
 import { sounds } from '../../lib/audio';
-import { recordForfeitOutcome, getRankTierInfo } from '../../lib/pvpService';
+import {
+  recordForfeitOutcome,
+  forfeitAndConcedeMatch,
+  subscribeToPvPRoom,
+  getRankTierInfo
+} from '../../lib/pvpService';
 import {
   Clock,
   Swords,
@@ -68,15 +73,57 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
   const currentUserPlayer = room.players.find(p => p.uid === currentUserId) || room.players[0];
   const userTeam = currentUserPlayer?.team || 'blue';
 
-  const handleConfirmForfeit = () => {
+  // Real-time listener for opponent forfeits or match completion
+  useEffect(() => {
+    const unsub = subscribeToPvPRoom(room.id, (updatedRoom) => {
+      if (updatedRoom.phase === 'completed') {
+        if (!isFinishedRef.current) {
+          isFinishedRef.current = true;
+          if (timerRef.current) clearInterval(timerRef.current);
+          if (botIntervalRef.current) clearInterval(botIntervalRef.current);
+          if (updatedRoom.isForfeitWin) {
+            sounds.playLevelUp();
+          } else {
+            sounds.playBuzzer();
+          }
+          onMatchComplete(updatedRoom);
+        }
+      }
+    });
+    return () => unsub();
+  }, [room.id, onMatchComplete]);
+
+  const handleConfirmForfeit = async () => {
     if (isFinishedRef.current) return;
     isFinishedRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     if (botIntervalRef.current) clearInterval(botIntervalRef.current);
 
     sounds.playMistake();
-    recordForfeitOutcome(room, currentUserId);
+    await forfeitAndConcedeMatch(room, currentUserId);
     onExit();
+  };
+
+  // Test helper: simulate opponent leaving/forfeiting to test instant victory & ELO award
+  const handleSimulateOpponentForfeit = async () => {
+    if (isFinishedRef.current) return;
+    const opponentPlayer = room.players.find(p => p.team !== userTeam) || {
+      uid: 'sim-opp-player',
+      displayName: 'Opponent Athlete',
+      team: userTeam === 'blue' ? 'red' : 'blue'
+    };
+
+    isFinishedRef.current = true;
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (botIntervalRef.current) clearInterval(botIntervalRef.current);
+
+    sounds.playLevelUp();
+    const completedRoom = await forfeitAndConcedeMatch(
+      room,
+      opponentPlayer.uid,
+      `${opponentPlayer.displayName} forfeited the match`
+    );
+    onMatchComplete(completedRoom);
   };
 
   // 2-Minute Countdown Timer
@@ -190,7 +237,7 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
 
         // Add ±15% natural human-like jitter to the rank interval
         const jitter = (Math.random() - 0.5) * 0.3;
-        const delay = Math.max(800, Math.round(rankInfo.botTickIntervalMs * (1 + jitter)));
+        const delay = Math.max(2600, Math.round(rankInfo.botTickIntervalMs * (1 + jitter)));
 
         const timer = setTimeout(() => {
           if (isCancelled) return;
@@ -200,16 +247,16 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
           let points = 0;
 
           if (accuracyRoll > rankInfo.botAccuracyMax) {
-            // Mistake / slow hesitation: minimal or 0 points
-            points = Math.floor(Math.random() * 15);
+            // Mistake / slow hesitation: no points awarded
+            points = 0;
           } else {
-            // Normal hit: calculate rank base score
+            // Normal hit: calculate rank base score (standardized to 100-125 base)
             const base = rankInfo.botBaseScoreMin + Math.floor(
               Math.random() * (rankInfo.botBaseScoreMax - rankInfo.botBaseScoreMin + 1)
             );
-            // Combo streak probability check
+            // Combo streak probability check: +10 to +20 points max (matching player streak bonuses)
             const isStreak = Math.random() < rankInfo.streakChance;
-            const streakBonus = isStreak ? Math.round(base * 0.4) : 0;
+            const streakBonus = isStreak ? 10 + Math.floor(Math.random() * 11) : 0;
             points = base + streakBonus;
           }
 
@@ -223,8 +270,8 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
         activeTimers.push(timer);
       };
 
-      // Stagger initial starts so bots do not all fire at t=0
-      const initialDelay = 1000 + Math.floor(Math.random() * 2000);
+      // Stagger initial starts so bots do not all fire at t=0 and human player has time to start
+      const initialDelay = 2500 + Math.floor(Math.random() * 2500);
       const startTimer = setTimeout(runBotCycle, initialDelay);
       activeTimers.push(startTimer);
     });
@@ -450,16 +497,36 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
           {/* Active Mode Info Card */}
           <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${config.badgeColor}`}>
-                {config.title}
-              </span>
-              <button
-                onClick={() => setShowForfeitModal(true)}
-                className="text-xs text-slate-400 hover:text-rose-600 flex items-center gap-1 font-bold cursor-pointer transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Forfeit</span>
-              </button>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${config.badgeColor}`}>
+                  {config.title}
+                </span>
+                {room.isPrivateRoom && (
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    Unranked (0 Elo)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  id="simulate-opp-forfeit-btn"
+                  onClick={handleSimulateOpponentForfeit}
+                  className="text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-1 rounded-lg border border-amber-200 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Test behavior when an opponent leaves or forfeits"
+                >
+                  <Award className="w-3 h-3 text-amber-600" />
+                  <span>Opponent Leaves</span>
+                </button>
+                <button
+                  id="arena-forfeit-btn"
+                  onClick={() => setShowForfeitModal(true)}
+                  className="text-xs text-slate-400 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 flex items-center gap-1 font-bold cursor-pointer transition-colors"
+                  title={room.isPrivateRoom ? "Concede friendly match (0 ELO penalty)" : "Concede and forfeit match (-20 ELO)"}
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Forfeit</span>
+                </button>
+              </div>
             </div>
             <div>
               <h4 className="font-display font-extrabold text-slate-900 text-sm">{gameInfo.name}</h4>
@@ -608,6 +675,7 @@ export const PvPMatchArena: React.FC<PvPMatchArenaProps> = ({
       <PvPForfeitModal
         isOpen={showForfeitModal}
         targetDestinationName="Lobby"
+        isPrivateRoom={room.isPrivateRoom}
         onStay={() => setShowForfeitModal(false)}
         onConfirmForfeit={() => {
           setShowForfeitModal(false);

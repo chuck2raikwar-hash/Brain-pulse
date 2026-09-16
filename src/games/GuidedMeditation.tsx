@@ -29,6 +29,7 @@ interface GuidedMeditationProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 type AmbientType = 'rain' | 'alpha' | 'ocean';

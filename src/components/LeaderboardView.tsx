@@ -76,13 +76,13 @@ export const LeaderboardView: React.FC = () => {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
         {categories.map((cat) => (
           <button
             key={cat.id}
             id={`leaderboard-tab-${cat.id}`}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
               activeCategory === cat.id
                 ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-blue-500/25 scale-[1.02]'
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -95,46 +95,46 @@ export const LeaderboardView: React.FC = () => {
 
       {/* Playful Podium Display (Top 3) */}
       {top3.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-4 items-end">
+        <div className="grid grid-cols-3 gap-2 sm:gap-6 pt-3 sm:pt-4 items-end">
           {/* Silver #2 */}
           <div className="flex flex-col items-center">
             {top3[1] && (
-              <div className="w-full bg-white border-2 border-cyan-200 rounded-3xl p-4 sm:p-6 flex flex-col items-center text-center shadow-md relative hover:-translate-y-1 transition-transform">
-                <div className="absolute -top-3.5 bg-cyan-500 text-white text-[10px] font-black px-3 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+              <div className="w-full bg-white border-2 border-cyan-200 rounded-2xl sm:rounded-3xl p-2.5 sm:p-6 flex flex-col items-center text-center shadow-md relative hover:-translate-y-1 transition-transform">
+                <div className="absolute -top-3 sm:-top-3.5 bg-cyan-500 text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
                   🥈 #2 Silver
                 </div>
-                <div className="w-12 h-12 bg-cyan-100 border-2 border-cyan-300 rounded-2xl flex items-center justify-center text-cyan-800 font-extrabold text-lg mt-2 mb-2 shadow-xs">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-cyan-100 border-2 border-cyan-300 rounded-xl sm:rounded-2xl flex items-center justify-center text-cyan-800 font-extrabold text-sm sm:text-lg mt-1.5 sm:mt-2 mb-1.5 sm:mb-2 shadow-xs">
                   {top3[1].displayName.charAt(0).toUpperCase()}
                 </div>
-                <div className="font-display font-bold text-sm sm:text-base text-slate-900 truncate max-w-full">
+                <div className="font-display font-bold text-xs sm:text-base text-slate-900 truncate max-w-full">
                   {top3[1].displayName}
                 </div>
-                <div className="font-mono text-xl sm:text-2xl font-black text-cyan-600 mt-1">
+                <div className="font-mono text-base sm:text-2xl font-black text-cyan-600 mt-0.5 sm:mt-1">
                   {top3[1].score.toLocaleString()}
                 </div>
-                <span className="text-[10px] font-extrabold uppercase text-slate-400">Points</span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-400">Points</span>
               </div>
             )}
           </div>
 
           {/* Gold #1 (Hero Champion) */}
-          <div className="flex flex-col items-center -mt-4 sm:-mt-6">
+          <div className="flex flex-col items-center -mt-3 sm:-mt-6">
             {top3[0] && (
-              <div className="w-full bg-gradient-to-br from-blue-600 via-cyan-500 to-lime-500 text-white rounded-3xl p-5 sm:p-8 flex flex-col items-center text-center shadow-xl shadow-cyan-500/25 relative hover:-translate-y-1 transition-transform">
-                <div className="absolute -top-4 bg-lime-400 text-slate-900 text-xs font-black px-4 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
-                  <Crown className="w-3.5 h-3.5 fill-slate-900" />
+              <div className="w-full bg-gradient-to-br from-blue-600 via-cyan-500 to-lime-500 text-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 flex flex-col items-center text-center shadow-xl shadow-cyan-500/25 relative hover:-translate-y-1 transition-transform">
+                <div className="absolute -top-3.5 sm:-top-4 bg-lime-400 text-slate-900 text-[10px] sm:text-xs font-black px-2.5 sm:px-4 py-0.5 sm:py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
+                  <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-slate-900" />
                   <span>#1 Champion</span>
                 </div>
-                <div className="w-14 h-14 bg-white text-blue-600 rounded-2xl flex items-center justify-center font-black text-2xl mt-2 mb-2 shadow-lg">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 bg-white text-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-lg sm:text-2xl mt-1.5 sm:mt-2 mb-1.5 sm:mb-2 shadow-lg">
                   {top3[0].displayName.charAt(0).toUpperCase()}
                 </div>
-                <div className="font-display font-black text-base sm:text-xl truncate max-w-full text-white">
+                <div className="font-display font-black text-xs sm:text-xl truncate max-w-full text-white">
                   {top3[0].displayName}
                 </div>
-                <div className="font-mono text-2xl sm:text-3xl font-black text-white mt-1 drop-shadow-xs">
+                <div className="font-mono text-lg sm:text-3xl font-black text-white mt-0.5 sm:mt-1 drop-shadow-xs">
                   {top3[0].score.toLocaleString()}
                 </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-100">Top Brain Score</span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-cyan-100">Top Brain Score</span>
               </div>
             )}
           </div>
@@ -142,20 +142,20 @@ export const LeaderboardView: React.FC = () => {
           {/* Bronze #3 */}
           <div className="flex flex-col items-center">
             {top3[2] && (
-              <div className="w-full bg-white border-2 border-orange-200 rounded-3xl p-4 sm:p-6 flex flex-col items-center text-center shadow-md relative hover:-translate-y-1 transition-transform">
-                <div className="absolute -top-3.5 bg-orange-500 text-white text-[10px] font-black px-3 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
+              <div className="w-full bg-white border-2 border-orange-200 rounded-2xl sm:rounded-3xl p-2.5 sm:p-6 flex flex-col items-center text-center shadow-md relative hover:-translate-y-1 transition-transform">
+                <div className="absolute -top-3 sm:-top-3.5 bg-orange-500 text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-0.5 rounded-full shadow-xs uppercase tracking-wider">
                   🥉 #3 Bronze
                 </div>
-                <div className="w-12 h-12 bg-orange-100 border-2 border-orange-300 rounded-2xl flex items-center justify-center text-orange-800 font-extrabold text-lg mt-2 mb-2 shadow-xs">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 bg-orange-100 border-2 border-orange-300 rounded-xl sm:rounded-2xl flex items-center justify-center text-orange-800 font-extrabold text-sm sm:text-lg mt-1.5 sm:mt-2 mb-1.5 sm:mb-2 shadow-xs">
                   {top3[2].displayName.charAt(0).toUpperCase()}
                 </div>
-                <div className="font-display font-bold text-sm sm:text-base text-slate-900 truncate max-w-full">
+                <div className="font-display font-bold text-xs sm:text-base text-slate-900 truncate max-w-full">
                   {top3[2].displayName}
                 </div>
-                <div className="font-mono text-xl sm:text-2xl font-black text-orange-600 mt-1">
+                <div className="font-mono text-base sm:text-2xl font-black text-orange-600 mt-0.5 sm:mt-1">
                   {top3[2].score.toLocaleString()}
                 </div>
-                <span className="text-[10px] font-extrabold uppercase text-slate-400">Points</span>
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-400">Points</span>
               </div>
             )}
           </div>

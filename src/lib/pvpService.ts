@@ -109,14 +109,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Grandmaster',
       badgeClass: 'text-amber-500 bg-amber-50 border-amber-300',
       botTitle: 'Grandmaster AI',
-      botAccuracyMin: 99,
-      botAccuracyMax: 100,
-      botTickIntervalMs: 1000,
-      botBaseScoreMin: 150,
-      botBaseScoreMax: 215,
-      streakChance: 0.68,
-      toughnessLabel: 'Tier 7/7 • Superhuman AI',
-      description: 'Peak cognitive speed, blistering sub-second answers, overwhelming score pressure.'
+      botAccuracyMin: 94,
+      botAccuracyMax: 96,
+      botTickIntervalMs: 3400,
+      botBaseScoreMin: 110,
+      botBaseScoreMax: 125,
+      streakChance: 0.35,
+      toughnessLabel: 'Tier 7/7 • Grandmaster AI',
+      description: 'Masterful cognitive pace, high accuracy, and strong competitive rhythm.'
     };
   } else if (r >= 1600) {
     base = {
@@ -127,14 +127,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Master',
       badgeClass: 'text-purple-600 bg-purple-50 border-purple-300',
       botTitle: 'Master AI',
-      botAccuracyMin: 98,
-      botAccuracyMax: 99,
-      botTickIntervalMs: 1300,
-      botBaseScoreMin: 125,
-      botBaseScoreMax: 175,
-      streakChance: 0.55,
-      toughnessLabel: 'Tier 6/7 • Apex AI',
-      description: 'Relentless speed bursts, near-flawless accuracy, ruthless lead contention.'
+      botAccuracyMin: 91,
+      botAccuracyMax: 94,
+      botTickIntervalMs: 3900,
+      botBaseScoreMin: 105,
+      botBaseScoreMax: 120,
+      streakChance: 0.28,
+      toughnessLabel: 'Tier 6/7 • Master AI',
+      description: 'Quick answers, sharp accuracy, and consistent scoring.'
     };
   } else if (r >= 1400) {
     base = {
@@ -145,14 +145,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Diamond',
       badgeClass: 'text-cyan-600 bg-cyan-50 border-cyan-300',
       botTitle: 'Diamond AI',
-      botAccuracyMin: 96,
-      botAccuracyMax: 98,
-      botTickIntervalMs: 1600,
-      botBaseScoreMin: 105,
-      botBaseScoreMax: 145,
-      streakChance: 0.42,
-      toughnessLabel: 'Tier 5/7 • Mastermind AI',
-      description: 'Punishing pace, sub-second recall, exceptional calculation accuracy.'
+      botAccuracyMin: 88,
+      botAccuracyMax: 92,
+      botTickIntervalMs: 4400,
+      botBaseScoreMin: 100,
+      botBaseScoreMax: 115,
+      streakChance: 0.22,
+      toughnessLabel: 'Tier 5/7 • Diamond AI',
+      description: 'Brisk pace, solid problem resolution, and high accuracy.'
     };
   } else if (r >= 1000) {
     base = {
@@ -163,14 +163,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Platinum',
       badgeClass: 'text-emerald-600 bg-emerald-50 border-emerald-300',
       botTitle: 'Platinum AI',
-      botAccuracyMin: 93,
-      botAccuracyMax: 96,
-      botTickIntervalMs: 2000,
-      botBaseScoreMin: 85,
-      botBaseScoreMax: 115,
-      streakChance: 0.32,
+      botAccuracyMin: 90,
+      botAccuracyMax: 95,
+      botTickIntervalMs: 4000,
+      botBaseScoreMin: 105,
+      botBaseScoreMax: 120,
+      streakChance: 0.22,
       toughnessLabel: 'Tier 4/7 • Expert AI',
-      description: 'High velocity pattern tracking, fast problem resolution, aggressive scoring.'
+      description: 'Agile pattern tracking and steady response pacing.'
     };
   } else if (r >= 600) {
     base = {
@@ -181,14 +181,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Gold',
       badgeClass: 'text-yellow-600 bg-yellow-50 border-yellow-300',
       botTitle: 'Gold AI',
-      botAccuracyMin: 88,
-      botAccuracyMax: 92,
-      botTickIntervalMs: 2500,
-      botBaseScoreMin: 65,
-      botBaseScoreMax: 90,
-      streakChance: 0.22,
+      botAccuracyMin: 85,
+      botAccuracyMax: 90,
+      botTickIntervalMs: 4700,
+      botBaseScoreMin: 100,
+      botBaseScoreMax: 115,
+      streakChance: 0.16,
       toughnessLabel: 'Tier 3/7 • Competitor AI',
-      description: 'Sharp answers, fast cognitive reflexes, regular combo streaks.'
+      description: 'Balanced pace, dependable reflexes, and occasional combo streaks.'
     };
   } else if (r >= 250) {
     base = {
@@ -199,14 +199,14 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Silver',
       badgeClass: 'text-slate-600 bg-slate-50 border-slate-300',
       botTitle: 'Silver AI',
-      botAccuracyMin: 80,
-      botAccuracyMax: 86,
-      botTickIntervalMs: 3200,
-      botBaseScoreMin: 45,
-      botBaseScoreMax: 65,
-      streakChance: 0.12,
+      botAccuracyMin: 78,
+      botAccuracyMax: 84,
+      botTickIntervalMs: 5500,
+      botBaseScoreMin: 100,
+      botBaseScoreMax: 110,
+      streakChance: 0.10,
       toughnessLabel: 'Tier 2/7 • Adept AI',
-      description: 'Steady pace, dependable baseline accuracy, moderate point output.'
+      description: 'Deliberate pace, dependable baseline accuracy, relaxed point output.'
     };
   } else {
     base = {
@@ -217,38 +217,38 @@ export function getRankTierInfo(rating: number, winStreak = 0): RankTierProfile 
       name: 'Bronze',
       badgeClass: 'text-amber-700 bg-amber-50/80 border-amber-300',
       botTitle: 'Bronze AI',
-      botAccuracyMin: 70,
-      botAccuracyMax: 76,
-      botTickIntervalMs: 4000,
-      botBaseScoreMin: 28,
-      botBaseScoreMax: 45,
+      botAccuracyMin: 68,
+      botAccuracyMax: 75,
+      botTickIntervalMs: 6500,
+      botBaseScoreMin: 95,
+      botBaseScoreMax: 105,
       streakChance: 0.05,
       toughnessLabel: 'Tier 1/7 • Novice AI',
-      description: 'Paced for beginners. Deliberate reaction windows and occasional calculation mistakes.'
+      description: 'Gentle pace for beginners. Thoughtful reaction windows and occasional calculation mistakes.'
     };
   }
 
-  // Win-Streak Escalation: Bots scale in toughness each consecutive win and reset on loss
+  // Win-Streak Escalation: Bots scale gently each consecutive win and reset on loss
   const streakLevel = Math.max(0, winStreak || 0);
 
   if (streakLevel > 0) {
     const streakBonusPct = Math.min(100, streakLevel * 10);
-    // Faster responses: tick interval drops by 8% per win (capped at 55% reduction)
-    const speedScale = Math.max(0.45, 1 - streakLevel * 0.08);
-    const botTickIntervalMs = Math.max(650, Math.round(base.botTickIntervalMs * speedScale));
+    // Moderate response scaling: tick interval drops by 3% per win (capped at 20% max speedup)
+    const speedScale = Math.max(0.80, 1 - streakLevel * 0.03);
+    const botTickIntervalMs = Math.max(2800, Math.round(base.botTickIntervalMs * speedScale));
 
-    // Higher accuracy: +2.5% accuracy per streak level (capped at 100%)
-    const accuracyBoost = Math.min(18, Math.round(streakLevel * 2.5));
-    const botAccuracyMin = Math.min(99, base.botAccuracyMin + accuracyBoost);
-    const botAccuracyMax = Math.min(100, base.botAccuracyMax + Math.round(accuracyBoost * 0.8));
+    // Higher accuracy: +2% accuracy per streak level (capped at 99%)
+    const accuracyBoost = Math.min(14, Math.round(streakLevel * 2.0));
+    const botAccuracyMin = Math.min(98, base.botAccuracyMin + accuracyBoost);
+    const botAccuracyMax = Math.min(99, base.botAccuracyMax + Math.round(accuracyBoost * 0.7));
 
-    // Higher scoring pressure: +10% score output per streak level
-    const scoreScale = 1 + streakBonusPct / 100;
+    // Higher scoring pressure: +2% score output per streak level (up to +20% max)
+    const scoreScale = 1 + (streakBonusPct * 0.2) / 100;
     const botBaseScoreMin = Math.round(base.botBaseScoreMin * scoreScale);
     const botBaseScoreMax = Math.round(base.botBaseScoreMax * scoreScale);
 
     // Combo streak chance boosts
-    const streakChance = Math.min(0.85, base.streakChance + streakLevel * 0.04);
+    const streakChance = Math.min(0.65, base.streakChance + streakLevel * 0.03);
 
     let streakTitleTag = 'Hardened';
     if (streakLevel === 2) streakTitleTag = 'Enraged';
@@ -445,11 +445,13 @@ export interface PvPUserStats {
 export function getLocalPvPStats(): PvPUserStats {
   try {
     const raw = localStorage.getItem(PVP_STORAGE_KEY);
+    const hasApplied1800Request = localStorage.getItem('brainpulse_pvp_rating_1800_applied_v1');
     if (raw) {
       const parsed = JSON.parse(raw);
-      // Auto-migrate fresh accounts with 0 matches from old 1200 default to 0 Elo
-      if (parsed.matchesPlayed === 0 && (parsed.rating === 1200 || !parsed.rating)) {
-        parsed.rating = 0;
+      // Ensure user is updated to 1800 Elo as requested for testing the best bot
+      if (!hasApplied1800Request) {
+        parsed.rating = 1800;
+        localStorage.setItem('brainpulse_pvp_rating_1800_applied_v1', 'true');
       }
       if (typeof parsed.currentWinStreak !== 'number') {
         parsed.currentWinStreak = 0;
@@ -459,12 +461,14 @@ export function getLocalPvPStats(): PvPUserStats {
       }
       saveLocalPvPStats(parsed);
       return parsed;
+    } else {
+      localStorage.setItem('brainpulse_pvp_rating_1800_applied_v1', 'true');
     }
   } catch (e) {
     console.error('Failed to load PvP stats', e);
   }
   return {
-    rating: 0,
+    rating: 1800,
     matchesPlayed: 0,
     wins: 0,
     losses: 0,
@@ -475,6 +479,13 @@ export function getLocalPvPStats(): PvPUserStats {
     currentWinStreak: 0,
     highestWinStreak: 0
   };
+}
+
+export function setPlayerElo(rating: number): PvPUserStats {
+  const current = getLocalPvPStats();
+  current.rating = Math.max(0, rating);
+  saveLocalPvPStats(current);
+  return current;
 }
 
 export function saveLocalPvPStats(stats: PvPUserStats) {
@@ -589,31 +600,38 @@ export function recordMatchOutcome(
   }
   const isMvp = highestPlayer?.uid === userUid;
 
-  // Calculate Rating Delta
+  const isPrivate = !!room.isPrivateRoom;
+
+  // Calculate Rating Delta: strictly 0 for private custom matches (unranked friendly)
   let ratingDelta = 0;
-  if (isWin) {
-    ratingDelta = 25 + (isMvp ? 10 : 0);
-  } else if (isTie) {
-    ratingDelta = 8;
-  } else {
-    ratingDelta = -15;
+  if (!isPrivate) {
+    if (isWin) {
+      ratingDelta = 25 + (isMvp ? 10 : 0);
+    } else if (isTie) {
+      ratingDelta = 8;
+    } else {
+      ratingDelta = -15;
+    }
   }
 
-  const newRating = Math.max(0, currentStats.rating + ratingDelta);
+  const newRating = isPrivate ? currentStats.rating : Math.max(0, currentStats.rating + ratingDelta);
   const userTeamScore = userTeam === 'blue' ? room.blueScore : room.redScore;
 
-  // Win-Streak calculation: increases every win, resets to 0 upon defeat
+  // Win-Streak calculation: increases every win in ranked, resets to 0 upon defeat.
+  // Private custom friendly matches do not affect competitive win streaks.
   const prevStreak = currentStats.currentWinStreak || 0;
   const prevBestStreak = currentStats.highestWinStreak || 0;
   let currentWinStreak = prevStreak;
   let highestWinStreak = prevBestStreak;
 
-  if (isWin) {
-    currentWinStreak = prevStreak + 1;
-    highestWinStreak = Math.max(prevBestStreak, currentWinStreak);
-  } else if (isLoss) {
-    // Defeat resets win streak back to 0, resetting bot toughness back to rank baseline
-    currentWinStreak = 0;
+  if (!isPrivate) {
+    if (isWin) {
+      currentWinStreak = prevStreak + 1;
+      highestWinStreak = Math.max(prevBestStreak, currentWinStreak);
+    } else if (isLoss) {
+      // Defeat in ranked matchmaking resets win streak back to 0
+      currentWinStreak = 0;
+    }
   }
 
   const updatedStats: PvPUserStats = {
@@ -634,18 +652,22 @@ export function recordMatchOutcome(
   // Save history record with guaranteed unique ID
   const selectedGameInfo = room.selectedGame ? GAME_MODES[room.selectedGame] : null;
   const uniqueEntropy = Math.random().toString(36).slice(2, 8);
+  const baseTitle = selectedGameInfo?.name || 'Cognitive Sprint';
+  const gameTitle = isPrivate
+    ? (room.isForfeitWin ? `${baseTitle} (Custom - Forfeit Victory)` : `${baseTitle} (Custom Match)`)
+    : (room.isForfeitWin ? `${baseTitle} (Opponent Forfeit)` : baseTitle);
   const historyRecord: PvPHistoryRecord = {
     id: `rec-${room.id}-${Date.now()}-${uniqueEntropy}`,
     roomId: room.id,
     mode: room.mode,
     gameType: room.selectedGame || 'memory-matrix',
-    gameTitle: selectedGameInfo?.name || 'Cognitive Sprint',
+    gameTitle,
     userTeam,
     blueScore: room.blueScore,
     redScore: room.redScore,
     winner: room.winner || 'tie',
     userScore,
-    mvpPlayerName: highestPlayer?.displayName || 'Brain Athlete',
+    mvpPlayerName: room.isForfeitWin ? 'Forfeit Victory' : (highestPlayer?.displayName || 'Brain Athlete'),
     timestamp: Date.now(),
     ratingDelta
   };
@@ -690,27 +712,31 @@ export function recordForfeitOutcome(
   const userTeam = userPlayer?.team || 'blue';
   const opponentTeam = userTeam === 'blue' ? 'red' : 'blue';
 
-  const forfeitPenalty = -20;
-  const newRating = Math.max(0, currentStats.rating + forfeitPenalty);
+  const isPrivate = !!room.isPrivateRoom;
+  const forfeitPenalty = isPrivate ? 0 : -20;
+  const newRating = isPrivate ? currentStats.rating : Math.max(0, currentStats.rating + forfeitPenalty);
 
   const updatedStats: PvPUserStats = {
     ...currentStats,
     rating: newRating,
     matchesPlayed: currentStats.matchesPlayed + 1,
     losses: currentStats.losses + 1,
-    currentWinStreak: 0 // Forfeit counts as a loss; resets win streak and bot difficulty
+    // Private matches do not wipe competitive ranked win streaks
+    currentWinStreak: isPrivate ? (currentStats.currentWinStreak || 0) : 0
   };
 
   saveLocalPvPStats(updatedStats);
 
   const selectedGameInfo = room.selectedGame ? GAME_MODES[room.selectedGame] : null;
   const uniqueEntropy = Math.random().toString(36).slice(2, 8);
+  const baseTitle = selectedGameInfo?.name || 'Cognitive Battle';
+  const gameTitle = isPrivate ? `${baseTitle} (Custom - Forfeit)` : `${baseTitle} (Forfeit)`;
   const historyRecord: PvPHistoryRecord = {
     id: `rec-forfeit-${room.id}-${Date.now()}-${uniqueEntropy}`,
     roomId: room.id,
     mode: room.mode,
     gameType: room.selectedGame || 'memory-matrix',
-    gameTitle: selectedGameInfo?.name ? `${selectedGameInfo.name} (Forfeit)` : 'Cognitive Battle (Forfeited)',
+    gameTitle,
     userTeam,
     blueScore: room.blueScore,
     redScore: room.redScore,
@@ -736,6 +762,39 @@ export function recordForfeitOutcome(
     ratingDelta: forfeitPenalty,
     newStats: updatedStats
   };
+}
+
+// Concede match and grant opponent instant victory & ELO
+export async function forfeitAndConcedeMatch(
+  room: PvPRoom,
+  userUid: string,
+  reason?: string
+): Promise<PvPRoom> {
+  // 1. Record forfeit penalty for the forfeiting player (-20 ELO, streak reset to 0)
+  recordForfeitOutcome(room, userUid);
+
+  const userPlayer = room.players.find(p => p.uid === userUid);
+  const userTeam = userPlayer?.team || 'blue';
+  const opponentTeam = userTeam === 'blue' ? 'red' : 'blue';
+
+  const completedRoom: PvPRoom = {
+    ...room,
+    phase: 'completed',
+    winner: opponentTeam,
+    isForfeitWin: true,
+    forfeitedBy: {
+      uid: userUid,
+      displayName: userPlayer?.displayName || 'Opponent',
+      team: userTeam
+    },
+    forfeitReason: reason || `${userPlayer?.displayName || 'Opponent'} forfeited the match`,
+    endsAt: Date.now(),
+    updatedAt: Date.now()
+  };
+
+  // 2. Broadcast locally and synchronize with Firestore so all opposing players immediately receive the victory modal & +25 ELO
+  await syncRoomToFirestore(completedRoom);
+  return completedRoom;
 }
 
 // Real-time Firestore Room Synchronization Helpers
@@ -820,39 +879,157 @@ export async function createMatchmakingRoomInFirestore(
   return room;
 }
 
+// 5-minute expiry window for custom match lobbies (300 seconds)
+export const CUSTOM_ROOM_EXPIRY_MS = 5 * 60 * 1000;
+
+// Host abandons and closes their custom private match lobby
+export async function abandonCustomRoom(
+  room: PvPRoom,
+  userUid: string,
+  reason: string = 'Host abandoned the queue'
+): Promise<PvPRoom> {
+  const abandonedRoom: PvPRoom = {
+    ...room,
+    phase: 'abandoned',
+    isAbandoned: true,
+    abandonedReason: reason,
+    forfeitedBy: {
+      uid: userUid,
+      displayName: room.players.find(p => p.uid === userUid)?.displayName || 'Host',
+      team: 'blue'
+    },
+    updatedAt: Date.now()
+  };
+
+  localActiveRoomsCache.set(room.id, abandonedRoom);
+  if (room.code) {
+    localActiveRoomsCache.set(room.code.toUpperCase(), abandonedRoom);
+  }
+  broadcastRoomLocal(abandonedRoom);
+
+  try {
+    const roomRef = doc(db, 'pvp_rooms', room.id);
+    await setDoc(roomRef, {
+      ...abandonedRoom,
+      phase: 'abandoned',
+      isAbandoned: true,
+      abandonedReason: reason,
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Error syncing abandoned room to Firestore:', err);
+  }
+
+  return abandonedRoom;
+}
+
+// Expire an inactive custom match lobby after 5 minutes
+export async function expireCustomRoom(
+  room: PvPRoom
+): Promise<PvPRoom> {
+  const expiredRoom: PvPRoom = {
+    ...room,
+    phase: 'abandoned',
+    isAbandoned: true,
+    isExpired: true,
+    abandonedReason: 'Lobby expired after 5 minutes of inactivity',
+    updatedAt: Date.now()
+  };
+
+  localActiveRoomsCache.set(room.id, expiredRoom);
+  if (room.code) {
+    localActiveRoomsCache.set(room.code.toUpperCase(), expiredRoom);
+  }
+  broadcastRoomLocal(expiredRoom);
+
+  try {
+    const roomRef = doc(db, 'pvp_rooms', room.id);
+    await setDoc(roomRef, {
+      ...expiredRoom,
+      phase: 'abandoned',
+      isAbandoned: true,
+      isExpired: true,
+      abandonedReason: 'Lobby expired after 5 minutes of inactivity',
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Error syncing expired room to Firestore:', err);
+  }
+
+  return expiredRoom;
+}
+
 // Find an active match room by its 6-character code
 export async function findRoomByCode(rawCode: string): Promise<PvPRoom | null> {
   const cleanCode = rawCode.trim().toUpperCase();
   if (!cleanCode) return null;
 
+  const now = Date.now();
+
   // 1. Check local in-memory cache first
   const cached = localActiveRoomsCache.get(cleanCode);
-  if (cached && (cached.phase === 'queueing' || cached.phase === 'voting')) {
-    return cached;
+  if (cached) {
+    if (cached.isAbandoned || cached.phase === 'abandoned') {
+      throw new Error(`This custom lobby was closed because the host abandoned the queue. No one can join.`);
+    }
+    if (cached.isPrivateRoom && (now - (cached.createdAt || 0) > CUSTOM_ROOM_EXPIRY_MS)) {
+      expireCustomRoom(cached).catch(() => {});
+      throw new Error(`This custom match room code has expired (5-minute time limit exceeded). Please ask the host to create a new lobby.`);
+    }
+    if (cached.phase === 'queueing' || cached.phase === 'voting') {
+      return cached;
+    }
   }
 
   // 2. Query Firestore pvp_rooms collection
   try {
     const roomsCol = collection(db, 'pvp_rooms');
-    const q = query(roomsCol, where('code', '==', cleanCode), limit(3));
+    const q = query(roomsCol, where('code', '==', cleanCode), limit(5));
     const snap = await getDocs(q);
 
     if (!snap.empty) {
       let bestRoom: PvPRoom | null = null;
+      let wasAbandoned = false;
+      let wasExpired = false;
+
       snap.forEach(docSnap => {
         const data = docSnap.data() as PvPRoom;
-        if (data.phase === 'queueing' || data.phase === 'voting') {
+        const isExp = Boolean(data.isPrivateRoom && (now - (data.createdAt || 0) > CUSTOM_ROOM_EXPIRY_MS));
+
+        if (data.isAbandoned || data.phase === 'abandoned') {
+          wasAbandoned = true;
+        } else if (isExp || data.isExpired) {
+          wasExpired = true;
+          expireCustomRoom(data).catch(() => {});
+        } else if (data.phase === 'queueing' || data.phase === 'voting') {
           if (!bestRoom || data.updatedAt > bestRoom.updatedAt) {
             bestRoom = data;
           }
         }
       });
+
       if (bestRoom) {
         broadcastRoomLocal(bestRoom);
         return bestRoom;
       }
+
+      if (wasAbandoned) {
+        throw new Error(`This custom lobby was closed because the host abandoned the queue. No one can join.`);
+      }
+
+      if (wasExpired) {
+        throw new Error(`This custom match room code has expired (5-minute time limit exceeded). Please ask the host to create a new lobby.`);
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
+    // Re-throw our explicit abandonment/expiry errors so callers can display them
+    if (
+      error?.message?.includes('abandoned') ||
+      error?.message?.includes('expired') ||
+      error?.message?.includes('5-minute')
+    ) {
+      throw error;
+    }
     console.warn('Error querying room by code from Firestore:', error);
   }
 
@@ -870,6 +1047,14 @@ export async function joinRoomByCode(
 
   if (!room) {
     throw new Error(`Match not found for code "${cleanCode}". Make sure the host has created the match and has the lobby open.`);
+  }
+
+  if (room.isAbandoned || room.phase === 'abandoned') {
+    throw new Error(`This custom lobby was closed because the host abandoned the queue. No one can join.`);
+  }
+
+  if (room.isPrivateRoom && (Date.now() - (room.createdAt || 0) > CUSTOM_ROOM_EXPIRY_MS)) {
+    throw new Error(`This custom match room code has expired (5-minute limit exceeded). Please ask the host to generate a new room code.`);
   }
 
   // If challenger is already the host or in the room (e.g. rejoining or duplicate tab)

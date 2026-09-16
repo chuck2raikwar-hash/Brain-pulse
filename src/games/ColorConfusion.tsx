@@ -15,6 +15,7 @@ interface ColorConfusionProps {
     responseTimeMs: number;
   }) => void;
   onExit: () => void;
+  onScoreUpdate?: (pointsDelta: number, isCorrect?: boolean) => void;
 }
 
 interface ColorItem {
@@ -39,7 +40,7 @@ const COLORS: ColorItem[] = [
   { name: 'VIOLET', hex: '#7c3aed', bgClass: 'bg-violet-600', textClass: 'text-violet-600' }
 ];
 
-export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onExit }) => {
+export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onExit, onScoreUpdate }) => {
   const [phase, setPhase] = useState<'ready' | 'playing' | 'game-over'>('ready');
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(45); // 45s blitz test
@@ -59,25 +60,47 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
   const [totalCount, setTotalCount] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
-  // Generate next trial
-  const nextTrial = useCallback(() => {
-    // 60% probability of ink color prompt, 40% written word prompt
-    const promptType: 'INK_COLOR' | 'WRITTEN_WORD' = Math.random() < 0.65 ? 'INK_COLOR' : 'WRITTEN_WORD';
-    
-    // Pick word and ink (ensure conflicting mostly)
+  // Generate next trial with gradual difficulty curve
+  const nextTrial = useCallback((qIndex = totalCount) => {
+    let promptType: 'INK_COLOR' | 'WRITTEN_WORD';
     const wordIdx = Math.floor(Math.random() * COLORS.length);
-    let inkIdx = Math.floor(Math.random() * COLORS.length);
-    if (inkIdx === wordIdx && Math.random() < 0.8) {
-      inkIdx = (inkIdx + 1) % COLORS.length;
+    let inkIdx = wordIdx;
+    let optionCount = 3;
+
+    if (qIndex < 2) {
+      // Questions 1 & 2: Congruent warm-up (Word text matches its ink color!), 3 options
+      promptType = 'INK_COLOR';
+      inkIdx = wordIdx;
+      optionCount = 3;
+    } else if (qIndex < 4) {
+      // Questions 3 & 4: Gentle conflict: Prompt asks for WRITTEN WORD (natural to read), 3 options
+      promptType = 'WRITTEN_WORD';
+      inkIdx = (wordIdx + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+      optionCount = 3;
+    } else if (qIndex < 7) {
+      // Questions 5 to 7: First INK COLOR conflict, 3 options
+      promptType = 'INK_COLOR';
+      inkIdx = (wordIdx + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+      optionCount = 3;
+    } else if (qIndex < 11) {
+      // Questions 8 to 11: 4 options, standard Stroop (75% INK_COLOR, 25% WRITTEN_WORD)
+      promptType = Math.random() < 0.75 ? 'INK_COLOR' : 'WRITTEN_WORD';
+      inkIdx = (wordIdx + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+      optionCount = 4;
+    } else {
+      // Questions 12+: Rapid switching between INK_COLOR and WRITTEN_WORD with 4 options
+      promptType = Math.random() < 0.60 ? 'INK_COLOR' : 'WRITTEN_WORD';
+      inkIdx = (wordIdx + 1 + Math.floor(Math.random() * (COLORS.length - 1))) % COLORS.length;
+      optionCount = 4;
     }
 
     const word = COLORS[wordIdx];
     const ink = COLORS[inkIdx];
     const correctTarget = promptType === 'INK_COLOR' ? ink : word;
 
-    // Pick 4 options including correct target
+    // Pick options including correct target
     const currentOptions: ColorItem[] = [correctTarget];
-    while (currentOptions.length < 4) {
+    while (currentOptions.length < optionCount) {
       const randColor = COLORS[Math.floor(Math.random() * COLORS.length)];
       if (!currentOptions.find(c => c.name === randColor.name)) {
         currentOptions.push(randColor);
@@ -92,7 +115,7 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
     setOptions(currentOptions);
     setTrialStartTime(Date.now());
     setFeedback(null);
-  }, []);
+  }, [totalCount]);
 
   // Ready countdown
   useEffect(() => {
@@ -130,8 +153,13 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
   }, [phase]);
 
   // Handle Game Over
+  const hasEndedRef = useRef(false);
+  const onGameOverRef = useRef(onGameOver);
+  onGameOverRef.current = onGameOver;
+
   useEffect(() => {
-    if (phase === 'game-over') {
+    if (phase === 'game-over' && !hasEndedRef.current) {
+      hasEndedRef.current = true;
       const avgReaction = reactionTimes.length > 0
         ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
         : 650;
@@ -139,7 +167,7 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
         ? Math.min(100, Math.round((correctCount / totalCount) * 100))
         : 0;
 
-      onGameOver({
+      onGameOverRef.current({
         gameType: 'color-confusion',
         gameTitle: 'Color Confusion (Stroop)',
         score,
@@ -148,7 +176,7 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
         responseTimeMs: avgReaction
       });
     }
-  }, [phase, score, correctCount, totalCount, reactionTimes, onGameOver]);
+  }, [phase, score, correctCount, totalCount, reactionTimes]);
 
   const handleSelectOption = (selected: ColorItem) => {
     if (phase !== 'playing') return;
@@ -167,11 +195,13 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
       setCorrectCount(c => c + 1);
       sounds.playCorrect(newStreak);
 
-      // Speed multiplier
-      const speedMultiplier = reaction < 600 ? 1.5 : reaction < 900 ? 1.2 : 1.0;
-      const points = Math.round((120 + newStreak * 20) * speedMultiplier);
+      // Equalized question points: 100 base + speed/streak bonus (0-30 max)
+      const speedBonus = reaction < 600 ? 15 : reaction < 900 ? 10 : 0;
+      const streakBonus = Math.min(15, newStreak * 2);
+      const points = 100 + speedBonus + streakBonus;
       setScore(s => s + points);
       setFeedback('correct');
+      onScoreUpdate?.(points, true);
 
       if (newStreak % 7 === 0) {
         sounds.playLevelUp();
@@ -180,11 +210,13 @@ export const ColorConfusion: React.FC<ColorConfusionProps> = ({ onGameOver, onEx
       setStreak(0);
       sounds.playMistake();
       setFeedback('wrong');
+      onScoreUpdate?.(0, false);
     }
 
-    // Advance immediately
+    // Advance immediately with next question index
+    const nextQIndex = totalCount + 1;
     setTimeout(() => {
-      nextTrial();
+      nextTrial(nextQIndex);
     }, 150);
   };
 

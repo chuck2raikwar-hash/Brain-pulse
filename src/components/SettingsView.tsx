@@ -19,7 +19,13 @@ import {
   Lock,
   Unlock,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  Download,
+  Smartphone,
+  Copy,
+  Check,
+  Loader2,
+  Code2
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -41,8 +47,45 @@ export const SettingsView: React.FC = () => {
   const [soundEnabled, setSoundEnabled] = useState(sounds.isEnabled());
   const [subActionLoading, setSubActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [hasCopiedCmds, setHasCopiedCmds] = useState(false);
+  const [downloadingZip, setDownloadingZip] = useState<string | null>(null);
 
   const access = canUserPlay();
+
+  const handleDownloadZip = async (fileName: string) => {
+    try {
+      setDownloadingZip(fileName);
+      sounds.playTick();
+      const response = await fetch(`/${fileName}`);
+      if (!response.ok) {
+        throw new Error(`Failed to download ${fileName}: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      sounds.playCorrect();
+    } catch (err) {
+      console.error('Download error:', err);
+      // Fallback directly
+      window.location.href = `/${fileName}`;
+    } finally {
+      setDownloadingZip(null);
+    }
+  };
+
+  const handleCopyCommands = () => {
+    const text = `npm install\nnpm run build\nnpx cap sync\n# To open in Android Studio:\nnpx cap open android\n# To open in Xcode (macOS):\nnpx cap open ios`;
+    navigator.clipboard.writeText(text);
+    setHasCopiedCmds(true);
+    sounds.playTick();
+    setTimeout(() => setHasCopiedCmds(false), 2500);
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +178,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Membership & Subscription Status Panel */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
@@ -286,7 +329,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Profile Management Form */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
             <User className="w-4 h-4" />
@@ -338,7 +381,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Preferences & Sound */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm">
         <div className="flex items-center gap-2.5 mb-4">
           <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
             <Volume2 className="w-4 h-4" />
@@ -367,9 +410,257 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
+      {/* 100% React Native Mobile Application Card */}
+      <div className="bg-gradient-to-br from-cyan-950 via-slate-900 to-slate-900 border border-cyan-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-2xl text-white relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 tracking-wider">
+                    React Native &bull; Expo SDK 52
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-300">iOS &bull; Android</span>
+                </div>
+                <h2 className="font-display text-xl sm:text-2xl font-black text-white mt-0.5">
+                  React Native Mobile Application
+                </h2>
+              </div>
+            </div>
+
+            <button
+              id="btn-download-react-native-zip"
+              type="button"
+              disabled={downloadingZip !== null}
+              onClick={() => handleDownloadZip('brainpulse-react-native.zip')}
+              className="py-3 px-6 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:opacity-95 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer whitespace-nowrap active:scale-98"
+            >
+              {downloadingZip === 'brainpulse-react-native.zip' ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Download className="w-4 h-4 text-white" />
+              )}
+              <span>
+                {downloadingZip === 'brainpulse-react-native.zip'
+                  ? 'Downloading React Native ZIP...'
+                  : 'Download React Native (.ZIP)'}
+              </span>
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed max-w-2xl mb-4">
+            Full cross-platform conversion written in <strong>TypeScript, React Native, and Expo SDK 52</strong>. Includes native bottom tab navigation, AsyncStorage persistence, Expo Haptics tactile responses, and pure React Native implementations of Color Confusion (Stroop), Memory Matrix, Reaction Speed, 2-Back, and 4-7-8 Breathing Pacer.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-cyan-500/30">
+              <div className="text-[10px] font-black uppercase text-cyan-300 mb-1">📱 Expo / React Native App</div>
+              <div className="text-xs text-slate-300 font-medium">Ready for <code>npx expo start</code>, Expo Go, or EAS build</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-sky-500/30">
+              <div className="text-[10px] font-black uppercase text-sky-300 mb-1">⚡ Native Components</div>
+              <div className="text-xs text-slate-300 font-medium">Built with View, Text, TouchableOpacity, and native haptics</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-blue-500/30">
+              <div className="text-[10px] font-black uppercase text-blue-300 mb-1">🍎 Cross-Platform iOS &amp; Android</div>
+              <div className="text-xs text-slate-300 font-medium">One codebase targeting iPhones, iPads, and Android devices</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 100% Native Swift & SwiftUI Application Card */}
+      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border border-indigo-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-2xl text-white relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                <Code2 className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 tracking-wider">
+                    Pure Native Swift &bull; SwiftUI
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-300">iOS 16+ &bull; Xcode 15+</span>
+                </div>
+                <h2 className="font-display text-xl sm:text-2xl font-black text-white mt-0.5">
+                  Native Swift iOS Application
+                </h2>
+              </div>
+            </div>
+
+            <button
+              id="btn-download-swift-native-zip"
+              type="button"
+              disabled={downloadingZip !== null}
+              onClick={() => handleDownloadZip('brainpulse-swift-native.zip')}
+              className="py-3 px-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-95 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer whitespace-nowrap active:scale-98"
+            >
+              {downloadingZip === 'brainpulse-swift-native.zip' ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Download className="w-4 h-4 text-white" />
+              )}
+              <span>
+                {downloadingZip === 'brainpulse-swift-native.zip'
+                  ? 'Downloading Swift ZIP...'
+                  : 'Download Native Swift (.ZIP)'}
+              </span>
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed max-w-2xl mb-4">
+            Converted from the React web stack to a <strong>100% pure Apple Swift 5.9+ &amp; SwiftUI codebase</strong>. Includes full MVVM architecture, native AVFoundation audio synthesizer, UIKit tactile haptics, standalone <code>BrainPulse.xcodeproj</code>, and pure SwiftUI implementations of the flagship cognitive drills.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-indigo-500/30">
+              <div className="text-[10px] font-black uppercase text-indigo-300 mb-1">🛠 Native Xcode Project</div>
+              <div className="text-xs text-slate-300 font-medium">Includes <code>BrainPulse.xcodeproj</code> with target schemas &amp; Info.plist</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-purple-500/30">
+              <div className="text-[10px] font-black uppercase text-purple-300 mb-1">🎨 Pure SwiftUI Views</div>
+              <div className="text-xs text-slate-300 font-medium">Memory Matrix, Reaction Speed, Stroop, 4-7-8 Breathing &amp; N-Back</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-pink-500/30">
+              <div className="text-[10px] font-black uppercase text-pink-300 mb-1">⚡ Zero Webviews</div>
+              <div className="text-xs text-slate-300 font-medium">100% native compiled execution with 120 FPS ProMotion responsiveness</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile App Download Card (iOS & Android) */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xl text-white relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-44 h-44 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                <Smartphone className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                    Capacitor Cross-Platform
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">iOS &bull; Android &bull; Web</span>
+                </div>
+                <h2 className="font-display text-xl font-black text-white mt-0.5">
+                  Mobile App Package (.ZIP)
+                </h2>
+              </div>
+            </div>
+
+            {/* Download Buttons */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                id="btn-download-xcode-zip"
+                type="button"
+                disabled={downloadingZip !== null}
+                onClick={() => handleDownloadZip('brainpulse-ios-xcode.zip')}
+                className="py-2.5 px-4.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-95 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap"
+              >
+                {downloadingZip === 'brainpulse-ios-xcode.zip' ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                ) : (
+                  <Download className="w-4 h-4 text-white" />
+                )}
+                <span>
+                  {downloadingZip === 'brainpulse-ios-xcode.zip'
+                    ? 'Preparing Xcode ZIP...'
+                    : 'Download Xcode iOS (.ZIP)'}
+                </span>
+              </button>
+
+              <button
+                id="btn-download-mobile-zip"
+                type="button"
+                disabled={downloadingZip !== null}
+                onClick={() => handleDownloadZip('brainpulse-mobile-app.zip')}
+                className="py-2.5 px-4.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 border border-slate-600/80 text-cyan-300 text-xs font-bold uppercase tracking-wider rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap"
+              >
+                {downloadingZip === 'brainpulse-mobile-app.zip' ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-cyan-300" />
+                ) : (
+                  <Download className="w-4 h-4 text-cyan-300" />
+                )}
+                <span>
+                  {downloadingZip === 'brainpulse-mobile-app.zip'
+                    ? 'Preparing Mobile ZIP...'
+                    : 'Full Mobile Bundle (.ZIP)'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed max-w-2xl mb-4">
+            Download the complete cross-platform mobile package. Includes pre-configured native projects for <strong>Android Studio (Gradle)</strong> and <strong>Xcode (iOS)</strong>, compiled web assets, audio synthesizer engine, and all 15 cognitive training modules.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/60">
+              <div className="text-[10px] font-extrabold uppercase text-cyan-400 mb-1">🤖 Android Studio</div>
+              <div className="text-xs text-slate-300 font-medium">Ready for Gradle APK / Play Store Bundle build</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/60">
+              <div className="text-[10px] font-extrabold uppercase text-indigo-400 mb-1">🍏 Apple iOS</div>
+              <div className="text-xs text-slate-300 font-medium">Full Xcode workspace with iPhone/iPad simulator support</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/60">
+              <div className="text-[10px] font-extrabold uppercase text-emerald-400 mb-1">⚡ Hot Sync</div>
+              <div className="text-xs text-slate-300 font-medium">Fast reload workflow using <code>npx cap sync</code></div>
+            </div>
+          </div>
+
+          {/* Quick instructions & copy command bar */}
+          <div className="mt-4 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="font-mono text-[11px] text-slate-300 bg-slate-950/80 px-3.5 py-2 rounded-xl border border-slate-800 flex-1 overflow-x-auto">
+              <code>npm install &amp;&amp; npm run build &amp;&amp; npx cap open android</code>
+            </div>
+
+            <button
+              id="btn-copy-mobile-cmds"
+              type="button"
+              onClick={handleCopyCommands}
+              className="py-2 px-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+            >
+              {hasCopiedCmds ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-400">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Copy Run Steps</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Account Security & Sign Out */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex items-center justify-between">
+      <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm flex items-center justify-between">
         <div>
           <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Session</span>
           <div className="font-display text-base font-black text-slate-900">Authenticated Player</div>

@@ -18,7 +18,9 @@ import {
   ChevronDown,
   Crown,
   CreditCard,
-  Lock
+  Lock,
+  Smartphone,
+  Image as ImageIcon
 } from 'lucide-react';
 import { sounds } from '../lib/audio';
 
@@ -29,13 +31,19 @@ interface NavbarProps {
   onTabChange: (tab: NavTab) => void;
   activeGameId?: string | null;
   onExitGame?: () => void;
+  isIPhoneMode?: boolean;
+  onToggleIPhoneMode?: () => void;
+  onOpenIPhonePhoto?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentTab,
   onTabChange,
   activeGameId,
-  onExitGame
+  onExitGame,
+  isIPhoneMode = true,
+  onToggleIPhoneMode,
+  onOpenIPhonePhoto
 }) => {
   const { user, profile, logout, openAuthModal, openPaywall, canUserPlay } = useAuth();
   const [soundEnabled, setSoundEnabled] = useState(sounds.isEnabled());
@@ -194,6 +202,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-mono font-bold">{profile?.brainPowerScore?.toLocaleString() || '100'}</span>
             <span className="text-[10px] text-blue-500 font-semibold uppercase">PTS</span>
           </div>
+
+          {/* iPhone 16 Pro Simulator & Showcase Buttons */}
+          {onToggleIPhoneMode && (
+            <button
+              id="navbar-toggle-iphone-btn"
+              onClick={onToggleIPhoneMode}
+              title={isIPhoneMode ? 'Exit to Full Web View' : 'Switch back to iPhone 16 Pro Simulator'}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer ${
+                isIPhoneMode
+                  ? 'bg-slate-900 text-white shadow-sm ring-2 ring-cyan-400/60'
+                  : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md shadow-blue-500/25 scale-[1.02]'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5 text-cyan-300" />
+              <span>{isIPhoneMode ? 'iPhone Active' : 'Switch to iPhone'}</span>
+            </button>
+          )}
+
+          {onOpenIPhonePhoto && (
+            <button
+              id="navbar-iphone-photo-btn"
+              onClick={onOpenIPhonePhoto}
+              title="Showcase Photo: BrainPulse on iPhone 16 Pro in Desert Titanium"
+              className="hidden sm:flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 px-3 py-1.5 rounded-full text-xs font-black shadow-xs transition-all cursor-pointer"
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>iPhone 16 Render</span>
+            </button>
+          )}
 
           {/* Sound FX Toggle */}
           <button

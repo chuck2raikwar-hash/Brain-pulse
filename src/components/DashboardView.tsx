@@ -238,11 +238,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
   };
 
   return (
-    <div id="dashboard-hub" className="space-y-10 animate-in fade-in duration-300 text-slate-800">
+    <div id="dashboard-hub" className="space-y-6 sm:space-y-8 animate-in fade-in duration-300 text-slate-800">
       {/* Top Split Hero Section */}
-      <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
         {/* Left Standings Block */}
-        <aside className="lg:col-span-4 bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-sm relative overflow-hidden">
+        <aside className="lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 flex flex-col justify-between shadow-sm relative overflow-hidden">
           {/* Playful background glow corner */}
           <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-cyan-400/20 via-blue-400/10 to-transparent rounded-bl-full pointer-events-none" />
 
@@ -258,48 +258,48 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
             </div>
 
             <div>
-              <h1 className="font-display text-5xl sm:text-6xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight flex items-baseline gap-1.5 sm:gap-2 truncate">
                 {profile?.brainPowerScore ? profile.brainPowerScore.toLocaleString() : '100'}
-                <span className="text-base font-bold text-slate-400 tracking-normal font-sans">PTS</span>
+                <span className="text-xs sm:text-sm md:text-base font-bold text-slate-400 tracking-normal font-sans shrink-0">PTS</span>
               </h1>
-              <div className="text-sm font-bold text-cyan-600 mt-1 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-cyan-500" />
-                {getRankTitle(profile?.brainPowerScore)}
+              <div className="text-xs sm:text-sm font-bold text-cyan-600 mt-1 flex items-center gap-1.5 truncate">
+                <Award className="w-4 h-4 text-cyan-500 shrink-0" />
+                <span>{getRankTitle(profile?.brainPowerScore)}</span>
               </div>
             </div>
 
-            <div className="mt-8 space-y-4 pt-6 border-t border-slate-100">
+            <div className="mt-6 sm:mt-8 space-y-3 sm:space-y-4 pt-4 sm:pt-6 border-t border-slate-100">
               {/* Daily Streak Card */}
-              <div className="p-3.5 bg-orange-50/80 border border-orange-200/70 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-sm shadow-orange-500/20">
-                    <Flame className="w-5 h-5 fill-white" />
+              <div className="p-3 sm:p-3.5 bg-orange-50/80 border border-orange-200/70 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-sm shadow-orange-500/20 shrink-0">
+                    <Flame className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-orange-600 block">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-orange-600 block">
                       Daily Streak
                     </span>
-                    <span className="text-lg font-extrabold text-slate-900">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900">
                       {profile?.dailyStreak || 1} Days Active
                     </span>
                   </div>
                 </div>
-                <span className="text-xs font-extrabold text-orange-700 bg-white px-2.5 py-1 rounded-full border border-orange-200">
+                <span className="text-[11px] sm:text-xs font-extrabold text-orange-700 bg-white px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full border border-orange-200 shrink-0">
                   🔥 On Fire
                 </span>
               </div>
 
               {/* Total Games Played */}
-              <div className="p-3.5 bg-cyan-50/80 border border-cyan-200/70 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center shadow-sm shadow-cyan-500/20">
-                    <Activity className="w-5 h-5" />
+              <div className="p-3 sm:p-3.5 bg-cyan-50/80 border border-cyan-200/70 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center shadow-sm shadow-cyan-500/20 shrink-0">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 block">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-700 block">
                       Completed Workouts
                     </span>
-                    <span className="text-lg font-extrabold text-slate-900">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900">
                       {profile?.totalGamesPlayed || 0} Sessions
                     </span>
                   </div>
@@ -308,11 +308,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
             </div>
           </section>
 
-          <footer className="pt-6 border-t border-slate-100 mt-6 relative z-10">
+          <footer className="pt-5 sm:pt-6 border-t border-slate-100 mt-5 sm:mt-6 relative z-10">
             <button
               id="btn-quick-play-recommended"
               onClick={() => onSelectGame('memory-matrix')}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-cyan-500 to-lime-500 hover:opacity-95 active:scale-[0.98] text-white text-xs font-extrabold tracking-wider uppercase rounded-2xl shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 sm:py-3.5 px-4 bg-gradient-to-r from-blue-600 via-cyan-500 to-lime-500 hover:opacity-95 active:scale-[0.98] text-white text-xs font-extrabold tracking-wider uppercase rounded-2xl shadow-lg shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Play className="w-4 h-4 fill-white" />
               <span>Start Daily Workout</span>
@@ -322,9 +322,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
         </aside>
 
         {/* Right Welcome & Performance Summary */}
-        <div className="lg:col-span-8 flex flex-col justify-between gap-6">
+        <div className="lg:col-span-8 flex flex-col justify-between gap-4 sm:gap-6">
           {/* Welcome Letterhead */}
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between relative overflow-hidden">
+          <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm flex flex-col justify-between relative overflow-hidden">
             {/* Playful background gradient ribbon */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-cyan-400 via-lime-400 to-orange-500" />
 
@@ -338,7 +338,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
                   Synced to Cloud
                 </span>
               </div>
-              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">
+              <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 mb-2 leading-snug">
                 Hey {profile?.displayName || 'Brain Athlete'}! Ready for a quick mental boost?
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-2xl">
@@ -346,26 +346,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-6 mt-6 border-t border-slate-100">
-              <div className="bg-cyan-50/60 p-3.5 rounded-2xl border border-cyan-100 text-center sm:text-left">
-                <span className="text-[10px] font-extrabold uppercase text-cyan-700 tracking-wider block">Working Memory</span>
-                <span className="font-display text-xl sm:text-2xl font-black text-cyan-900">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 pt-4 sm:pt-5 mt-4 sm:mt-5 border-t border-slate-100">
+              <div className="bg-cyan-50/60 p-2.5 sm:p-3.5 rounded-2xl border border-cyan-100 flex sm:flex-col items-center sm:items-start justify-between sm:justify-start">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-cyan-700 tracking-wider block">Working Memory</span>
+                  <span className="text-[11px] text-cyan-600/80 font-medium hidden sm:block">Pattern Accuracy</span>
+                </div>
+                <span className="font-display text-lg sm:text-2xl font-black text-cyan-900 mt-0 sm:mt-1">
                   {profile && profile.totalGamesPlayed > 0
                     ? `${profile.peakMemoryAccuracy || 0}%`
                     : '--'}
                 </span>
               </div>
-              <div className="bg-orange-50/60 p-3.5 rounded-2xl border border-orange-100 text-center sm:text-left">
-                <span className="text-[10px] font-extrabold uppercase text-orange-700 tracking-wider block">Reaction Speed</span>
-                <span className="font-display text-xl sm:text-2xl font-black text-orange-900">
+
+              <div className="bg-orange-50/60 p-2.5 sm:p-3.5 rounded-2xl border border-orange-100 flex sm:flex-col items-center sm:items-start justify-between sm:justify-start">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-orange-700 tracking-wider block">Reaction Speed</span>
+                  <span className="text-[11px] text-orange-600/80 font-medium hidden sm:block">Response Latency</span>
+                </div>
+                <span className="font-display text-lg sm:text-2xl font-black text-orange-900 mt-0 sm:mt-1">
                   {profile && profile.totalGamesPlayed > 0 && profile.peakReactionTimeMs
                     ? `${profile.peakReactionTimeMs}ms`
                     : '--'}
                 </span>
               </div>
-              <div className="bg-lime-50/60 p-3.5 rounded-2xl border border-lime-100 text-center sm:text-left">
-                <span className="text-[10px] font-extrabold uppercase text-lime-800 tracking-wider block">Focus Score</span>
-                <span className="font-display text-xl sm:text-2xl font-black text-lime-950">
+
+              <div className="bg-lime-50/60 p-2.5 sm:p-3.5 rounded-2xl border border-lime-100 flex sm:flex-col items-center sm:items-start justify-between sm:justify-start">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-lime-800 tracking-wider block">Focus Score</span>
+                  <span className="text-[11px] text-lime-700/80 font-medium hidden sm:block">Composite Index</span>
+                </div>
+                <span className="font-display text-lg sm:text-2xl font-black text-lime-950 mt-0 sm:mt-1">
                   {profile && profile.totalGamesPlayed > 0
                     ? profile.peakFocusScore.toLocaleString()
                     : '100 PTS'}
@@ -375,13 +386,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
           </div>
 
           {/* Performance Analytics Preview */}
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-5">
+          <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-sm flex flex-col gap-4 sm:gap-5">
             <div className="flex justify-between items-center">
               <div>
                 <span className="text-[10px] font-extrabold tracking-wider uppercase text-blue-600 block mb-0.5">
                   Live Stats
                 </span>
-                <h3 className="font-display text-xl font-black text-slate-900">Activity Overview</h3>
+                <h3 className="font-display text-lg sm:text-xl font-black text-slate-900">Activity Overview</h3>
               </div>
               <button
                 onClick={() => onNavigateTab('progress')}
@@ -393,7 +404,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
             </div>
 
             {/* Playful Colorful Bar Graph */}
-            <div className="flex items-end justify-between h-28 gap-2.5 sm:gap-4 pt-2 px-2 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="flex items-end justify-between h-24 sm:h-28 gap-2 sm:gap-3.5 pt-2 px-2 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="flex-1 flex flex-col items-center gap-1 group h-full justify-end pb-2">
                 <div className="w-full bg-cyan-400 rounded-lg h-[45%] group-hover:bg-cyan-500 transition-colors shadow-xs"></div>
                 <span className="text-[9px] font-bold text-slate-400">Mon</span>
@@ -424,22 +435,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
               </div>
             </div>
 
-            <div className="flex justify-between border-t border-slate-100 pt-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
-                <span className="font-medium text-slate-600">
-                  Accuracy:{' '}
+            <div className="grid grid-cols-3 gap-1 sm:gap-2 border-t border-slate-100 pt-3 text-[11px] sm:text-xs">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0"></span>
+                <span className="font-medium text-slate-600 truncate">
+                  Acc:{' '}
                   <strong className="text-slate-900 font-extrabold">
                     {profile && profile.totalGamesPlayed > 0 && profile.peakMemoryAccuracy
                       ? `${profile.peakMemoryAccuracy}%`
-                      : 'Calibrating'}
+                      : 'N/A'}
                   </strong>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
-                <span className="font-medium text-slate-600">
-                  Avg Speed:{' '}
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0"></span>
+                <span className="font-medium text-slate-600 truncate">
+                  Avg:{' '}
                   <strong className="text-slate-900 font-extrabold">
                     {profile && profile.totalGamesPlayed > 0 && profile.peakReactionTimeMs
                       ? `${profile.peakReactionTimeMs}ms`
@@ -447,14 +458,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
                   </strong>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-lime-500"></span>
-                <span className="font-medium text-slate-600">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-lime-500 shrink-0"></span>
+                <span className="font-medium text-slate-600 truncate">
                   Rank:{' '}
                   <strong className="text-slate-900 font-extrabold">
                     {profile && profile.totalGamesPlayed > 0
                       ? getRankTitle(profile.brainPowerScore)
-                      : 'New Athlete'}
+                      : 'Athlete'}
                   </strong>
                 </span>
               </div>
@@ -464,15 +475,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
       </div>
 
       {/* PvP Multiplayer Callout Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative z-10 space-y-2">
+        <div className="relative z-10 space-y-2 text-center md:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-cyan-300 text-xs font-black uppercase tracking-wider border border-blue-400/30">
             <Swords className="w-3.5 h-3.5 text-cyan-400" />
             <span>New: Real-Time PvP Battles</span>
           </div>
-          <h3 className="font-display font-black text-2xl sm:text-3xl tracking-tight text-white">
+          <h3 className="font-display font-black text-xl sm:text-2xl lg:text-3xl tracking-tight text-white">
             Compete in 1v1, 2v2, 3v3, 4v4 &amp; 5v5 Squad Wars
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 max-w-xl font-medium">
@@ -482,7 +493,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
 
         <button
           onClick={() => onNavigateTab('pvp')}
-          className="relative z-10 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-display font-black text-sm flex items-center gap-2 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 cursor-pointer shrink-0"
+          className="relative z-10 w-full md:w-auto justify-center px-6 py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-display font-black text-sm flex items-center gap-2 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 cursor-pointer shrink-0"
         >
           <Play className="w-4 h-4 fill-white" />
           <span>Enter PvP Arena</span>
@@ -490,75 +501,115 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onSelectGame, onNa
         </button>
       </div>
 
-      {/* Training Regimen Grid Section */}
-      <div>
-        <div className="flex justify-between items-center mb-6">
+      {/* Today's Recommended Daily Drills */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-xs font-extrabold tracking-wider uppercase text-cyan-600 block mb-0.5">
-              15 Brain-Training Games & Drills
+            <span className="text-[11px] font-extrabold tracking-wider uppercase text-blue-600 block">
+              Today's Recommended Drills
             </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-black text-slate-900">Featured Regimen</h2>
+            <h2 className="font-display text-xl sm:text-2xl font-black text-slate-900">
+              Daily Training Set
+            </h2>
           </div>
           <button
+            id="dashboard-explore-all-games-btn"
             onClick={() => onNavigateTab('games')}
-            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl border border-blue-200 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-xl border border-blue-200/80 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
           >
             <span>Explore All 15 Drills</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {gamesList.map((game, idx) => {
-            const userHighScore = profile?.highScores?.[game.id] || 0;
-            const accent = getGameAccent(game.id);
-            const IconComponent = accent.icon;
-
+        {/* Spacious Curated Drill Cards */}
+        <div className="space-y-3">
+          {[
+            {
+              id: 'memory-matrix' as GameType,
+              title: 'Memory Matrix',
+              domain: 'Memory',
+              domainColor: 'text-blue-600',
+              iconBg: 'bg-blue-100 text-blue-600',
+              icon: Grid3X3,
+              desc: 'Memorize flashing pattern grid positions',
+              score: profile?.highScores?.['memory-matrix'] || 1250,
+              duration: '45s',
+              difficulty: 'Moderate'
+            },
+            {
+              id: 'reaction-drill' as GameType,
+              title: 'Reaction Speed Drill',
+              domain: 'Speed',
+              domainColor: 'text-amber-600',
+              iconBg: 'bg-amber-100 text-amber-600',
+              icon: Zap,
+              desc: 'React instantly when the light turns green',
+              score: profile?.highScores?.['reaction-drill'] || 920,
+              duration: '30s',
+              difficulty: 'Moderate'
+            },
+            {
+              id: 'color-confusion' as GameType,
+              title: 'Color Confusion (Stroop)',
+              domain: 'Attention',
+              domainColor: 'text-cyan-600',
+              iconBg: 'bg-cyan-100 text-cyan-600',
+              icon: Eye,
+              desc: 'Overcome cognitive Stroop interference',
+              score: profile?.highScores?.['color-confusion'] || 1400,
+              duration: '45s',
+              difficulty: 'High'
+            }
+          ].map((item) => {
+            const DrillIcon = item.icon;
             return (
               <div
-                key={game.id}
-                onClick={() => onSelectGame(game.id)}
-                className={`group cursor-pointer rounded-3xl p-6 sm:p-7 bg-white border ${accent.border} hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between relative overflow-hidden`}
+                key={item.id}
+                id={`daily-drill-${item.id}`}
+                onClick={() => onSelectGame(item.id)}
+                className="w-full bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 border border-slate-200/70 shadow-2xs hover:shadow-md hover:border-slate-300 active:scale-[0.985] transition-all cursor-pointer flex items-center gap-3.5 sm:gap-4 select-none group"
               >
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-2xl ${accent.iconBg} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${accent.badgeBg} inline-block`}>
-                          {game.domain}
-                        </span>
-                        <div className="text-xs font-bold text-slate-400 mt-0.5">
-                          {game.difficulty} &bull; {game.estimatedTime}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <h3 className="font-display text-2xl font-extrabold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">
-                    {game.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-6">
-                    {game.description}
-                  </p>
+                {/* Left Icon Container */}
+                <div
+                  className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl ${item.iconBg} flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+                >
+                  <DrillIcon className="w-6 h-6" />
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">High Score</span>
-                    <span className={`font-mono text-lg font-black ${accent.accentText}`}>
-                      {userHighScore.toLocaleString()} PTS
+                {/* Center Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-extrabold text-slate-900 text-[15px] sm:text-base leading-tight truncate tracking-tight group-hover:text-blue-600 transition-colors">
+                      {item.title}
+                    </h3>
+                    <span className={`text-xs font-bold ${item.domainColor} shrink-0`}>
+                      {item.domain}
                     </span>
                   </div>
 
-                  <button
-                    className={`py-2 px-5 rounded-xl ${accent.btnBg} text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5 transition-all`}
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Play Now</span>
-                  </button>
+                  <p className="text-xs text-slate-500 font-normal mt-0.5 leading-snug line-clamp-1">
+                    {item.desc}
+                  </p>
+
+                  <div className="flex items-center gap-3 sm:gap-4 mt-2 text-[11px] text-slate-600 font-medium">
+                    <div className="flex items-center gap-1">
+                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                      <span className="font-semibold text-slate-800 font-mono">
+                        {item.score.toLocaleString()} PTS
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-slate-500">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{item.duration}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Flame className="w-3.5 h-3.5 text-orange-500" />
+                      <span className="text-slate-600">{item.difficulty}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             );

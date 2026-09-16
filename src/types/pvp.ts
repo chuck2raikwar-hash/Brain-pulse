@@ -44,6 +44,16 @@ export interface PvPRoom {
   isPrivateRoom?: boolean;
   playerWinStreak?: number;
   botStreakMultiplier?: number;
+  isForfeitWin?: boolean;
+  forfeitedBy?: {
+    uid: string;
+    displayName: string;
+    team: TeamType;
+  };
+  forfeitReason?: string;
+  isAbandoned?: boolean;
+  isExpired?: boolean;
+  abandonedReason?: string;
   createdAt: number;
   updatedAt: number;
 }
